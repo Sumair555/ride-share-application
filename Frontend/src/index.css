@@ -1,0 +1,32 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  .theme-light {
+    --color-fill: #fee2e2; /*(red-100) */
+    --color-fill-2: #f87171; /*(red-400)*/
+    --color-button-accent: #dc2626; /*(red-600)*/
+    --color-button-accent-hover: #b91c1c; /*red-700*/
+    --color-text-base: #ffffff; /*white*/
+    --color-text-base-2: #000000;
+    --color-text-main: #c2410c; /*orange-700*/
+    --color-text-heading-1: #450a0a; /*red-950*/
+    --color-fill-signup: #94a3b8; /*slate-400*/
+    --color-button-singup: #c2410c; /*orange-700*/
+  }
+  .theme-dark {
+    --color-fill: #334155; /*slate-700*/
+    --color-fill-2: #fff18a; /*(yellow-200)*/
+    --color-button-accent: #ca8a04; /*(yellow-600)*/
+    --color-button-accent-hover: #a16207; /*yellow-700*/
+    --color-text-base: #000000; /*black*/
+    --color-text-base-2: #ffffff;
+    --color-text-main: #eab308; /*yellow-500*/
+    --color-text-heading-1: #ffffff;
+    --color-fill-signup: #94a3b8; /*slate-400*/
+    --color-button-singup: #c2410c; /*orange-700*/
+    --color-input-signup: #71717a;
+    --color-button-signup-2: #0f172a; /*slate-950*/
+  }
+}
