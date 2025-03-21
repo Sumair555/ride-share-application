@@ -1,6 +1,7 @@
-# Maruthi-Prasanth Ride Share
+# SHaik Sumair Ride Share
 
 ## Table of Contents
+
 - [Abstract](#abstract)
 - [Project Structure](#project-structure)
 - [Objective](#objective)
@@ -17,14 +18,15 @@
 ---
 
 ### Abstract
+
 This project is a **backend system for a ride-sharing platform** that enables users to book rides, register as drivers, and manage ride details. It is built using **Node.js, Express.js, and MongoDB**, following a structured MVC (Model-View-Controller) architecture. The system ensures seamless ride-sharing experiences, secure authentication, and efficient database management.
 
 Ride-sharing applications help reduce traffic congestion, lower transportation costs, and promote eco-friendly commuting. This backend system provides a **secure and scalable** platform for managing user authentication, ride creation, driver registrations, and booking functionalities.
 
 ---
 
-### Project Structure
-maruthi-prasanth-ride-share/
+### Project Structure-ride-share/
+
 ├── Backend/
 │ ├── config.js # Configuration settings
 │ ├── package.json # Dependencies and project metadata
@@ -45,11 +47,12 @@ maruthi-prasanth-ride-share/
 │ │ ├── Ride.js
 │ │ └── User.js
 
-
 ---
 
 ### Objective
+
 The main goals of this project are:
+
 - 🚗 **Enable ride booking** for users.
 - 👨‍✈️ **Allow drivers to register and manage rides.**
 - 🔍 **Provide a structured and scalable backend.**
@@ -59,6 +62,7 @@ The main goals of this project are:
 ---
 
 ### Features
+
 - 🔑 **User Authentication:** Secure login and registration using JWT authentication.
 - 🚖 **Driver Registration:** Drivers can register, update ride details, and manage their rides.
 - 📍 **Ride Management:** Users can view available rides, book a ride, or cancel a booking.
@@ -68,6 +72,7 @@ The main goals of this project are:
 ---
 
 ### Technologies Used
+
 - **Node.js** (Backend framework)
 - **Express.js** (Routing and middleware management)
 - **MongoDB** (Database for storing ride/user/driver details)
@@ -77,7 +82,9 @@ The main goals of this project are:
 ---
 
 ### Prerequisites
+
 Ensure you have the following installed:
+
 - **Node.js (v14 or later)**
 - **MongoDB** (local or cloud database)
 - **Postman** (for API testing, optional)
@@ -85,14 +92,15 @@ Ensure you have the following installed:
 ---
 
 ### Installation Guide
+
 #### 1️⃣ Clone the Repository
 
-### git clone https://github.com/yourusername/maruthi-prasanth-ride-share.git
-cd maruthi-prasanth-ride-share/Backend
+### git clone https://github.com/Sumair555/ride-share-application.git
 
 ---
 
-### 
+###
+
 2️⃣ Install Dependencies
 bash
 CopyEdit
@@ -106,7 +114,6 @@ MONGO_URI=your_mongodb_connection_string
 PORT=5000
 JWT_SECRET=your_secret_key
 
-
 How to Run
 Start the server:
 bash
@@ -117,7 +124,8 @@ Your backend should now be running on http://localhost:5000/.
 
 ---
 
-### 
+###
+
 API Endpoints
 🔹 User Routes
 POST /api/user/register → Register a new user
@@ -132,7 +140,8 @@ POST /api/ride/book/:id → Book a ride
 
 ---
 
-### 
+###
+
 Future Enhancements
 📱 Mobile App Integration: Connect the backend with mobile apps for easy ride access.
 📍 Live Tracking: Implement Google Maps API to track ride locations.
@@ -141,7 +150,7 @@ Future Enhancements
 
 ---
 
-### 
+###
+
 Contribution
 Feel free to fork this repository, raise issues, or submit pull requests to improve the project.
-
