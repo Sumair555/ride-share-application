@@ -1,4 +1,4 @@
-# SHaik Sumair Ride Share
+# Shaik Sumair Ride Share
 
 ## Table of Contents
 
