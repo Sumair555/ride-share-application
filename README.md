@@ -120,7 +120,7 @@ bash
 CopyEdit
 npm start
 
-Your backend should now be running on http://localhost:5000/.
+Your backend should now be running on http://localhost:3000/.
 
 ---
 
