@@ -2,7 +2,6 @@ const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const Driver = require("../models/Driver");
 require("dotenv").config();
-
 const signUp = async (req, res, next) => {
   console.log(req.body);
   const { name, email, password, license, model, phone } = req.body;
