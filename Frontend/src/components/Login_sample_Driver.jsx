@@ -16,21 +16,42 @@ function Login_sample_Driver() {
     validationSchema: LoginSchema,
     onSubmit: async (values, actions) => {
       try {
+        console.log("Attempting login with:", values.email);
         const response = await axios.post("http://localhost:3000/driver/login", {
           email: values.email,
           password: values.password,
         });
 
-        const accesstoken = response.data.accesstoken;
-        localStorage.setItem("accessToken", accesstoken);
-        localStorage.setItem("driver_id", response.data.id);
+        console.log("Login response:", response.data);
+        const accessToken = response.data.accesstoken;
+        const driverId = response.data.id;
         
+        if (!accessToken || !driverId) {
+          throw new Error("Invalid response from server - missing token or ID");
+        }
+
+        console.log("Storing tokens - Access Token:", accessToken.substring(0, 10) + "...", "Driver ID:", driverId);
+        localStorage.setItem("accessToken", accessToken);
+        localStorage.setItem("driver_id", driverId);
+        
+        console.log("Validating stored data...");
+        const storedToken = localStorage.getItem("accessToken");
+        const storedId = localStorage.getItem("driver_id");
+        
+        if (!storedToken || !storedId) {
+          throw new Error("Failed to store authentication data");
+        }
+
+        console.log("Data stored successfully, navigating to dashboard...");
         navigate("/driver/dashboard");
       } catch (error) {
-        setError(error);
-        console.error("Login failed:", error);
+        console.error("Login error:", error);
+        setError(true);
+        if (error.response?.data?.message) {
+          console.error("Server error message:", error.response.data.message);
+        }
       } finally {
-        actions.resetForm();
+        actions.setSubmitting(false);
       }
     },
   });

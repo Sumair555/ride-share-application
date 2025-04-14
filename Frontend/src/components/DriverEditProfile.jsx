@@ -1,264 +1,257 @@
-// import React from "react";
-// import Sidebar from "./Sidebar";
-// import driver from "../../public/driver.jpeg";
-// function DriverEditProfile() {
-//   return (
-//     <div
-//       style={{ backgroundImage: `url(${driver})` }}
-//       className="min-h-screen bg-no-repeat bg-cover flex flex-col items-center p-10"
-//     >
-//       <Sidebar />
-//       <h1 className="text-4xl font-bold">Edit Profile</h1>
-
-//       <div className=" mt-10 backdrop-blur-xl rounded-xl shadow-xl p-10 w-1/3">
-//         <form name="max-w-sm mx-auto">
-//           <div className="mb-5">
-//             <label
-//               htmlFor="Name"
-//               className="block mb-2 text-sm font-medium text-black"
-//             >
-//               Name
-//             </label>
-//             <input
-//               type="string"
-//               id="name"
-//               className="shadow-sm bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500 dark:shadow-sm-light"
-//               required
-//             />
-//           </div>
-
-//           <div className="mb-5">
-//             <label
-//               htmlFor="Email"
-//               className="block mb-2 text-sm font-medium text-black"
-//             >
-//               Email
-//             </label>
-//             <input
-//               type="email"
-//               id="email"
-//               className="shadow-sm bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500 dark:shadow-sm-light"
-//               required
-//             />
-//           </div>
-//           <div className="mb-5">
-//             <label
-//               htmlFor="license"
-//               className="block mb-2 text-sm font-medium text-black"
-//             >
-//               License
-//             </label>
-//             <input
-//               type="string"
-//               id="license"
-//               className="shadow-sm bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500 dark:shadow-sm-light"
-//               required
-//             />
-//           </div>
-//           <div className="mb-5">
-//             <label
-//               htmlFor="model"
-//               className="block mb-2 text-sm font-medium text-black"
-//             >
-//               Car Model
-//             </label>
-//             <input
-//               type="string"
-//               id="model"
-//               className="shadow-sm bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500 dark:shadow-sm-light"
-//               required
-//             />
-//           </div>
-//           <div className="mb-5">
-//             <label
-//               htmlFor="phone"
-//               className="block mb-2 text-sm font-medium text-black "
-//             >
-//               Phone number
-//             </label>
-//             <input
-//               type="string"
-//               id="phone"
-//               className="shadow-sm bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500 dark:shadow-sm-light"
-//               required
-//             />
-//           </div>
-
-//           <button
-//             type="submit"
-//             className="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800 w-full"
-//           >
-//             Save
-//           </button>
-//         </form>
-//       </div>
-//     </div>
-//   );
-// }
-
-// export default DriverEditProfile;
-
-import React, { useEffect, useState } from "react";
+import React, { useState, useEffect } from "react";
 import Sidebar from "./Sidebar";
-import driver from "../../public/driver.jpeg";
 import axios from "axios";
+import { FiUser, FiMail, FiPhone, FiSave } from "react-icons/fi";
+import { BiCar } from "react-icons/bi";
 
 function DriverEditProfile() {
-  // State variables for the form data
-  const [name, setName] = useState("");
-  const [license, setLicense] = useState("");
-  const [model, setModel] = useState("");
-  const [phone, setPhone] = useState("");
+  const [formData, setFormData] = useState({
+    name: "",
+    email: "",
+    phone: "",
+    vehicle_type: "",
+    model: "",
+    vehicle_number: ""
+  });
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [success, setSuccess] = useState(false);
 
-  // Fetch initial driver data and populate form fields
   useEffect(() => {
-    const fetchDriverData = async () => {
-      try {
-        const res = await axios.post(
-          "http://localhost:3000/driver/details",
-          {
-            driver_id: localStorage.getItem("driver_id"),
-          },
-          {
-            headers: {
-              Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
-            },
-          }
-        );
-        // Set state variables with fetched data
-        console.log(res);
-        setName(res.data.name);
-        setLicense(res.data.license);
-        setModel(res.data.model);
-        setPhone(res.data.phone);
-      } catch (error) {
-        console.error("Error fetching driver data:", error);
-      }
-    };
     fetchDriverData();
   }, []);
 
-  // Handle form submission and update driver data
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    const updatedData = {
-      driver_id: localStorage.getItem("driver_id"),
-      name,
-      license,
-      model,
-      phone,
-    };
+  const fetchDriverData = async () => {
     try {
-      const res = await axios.post(
-        "http://localhost:3000/driver/update",
-        updatedData,
+      setLoading(true);
+      setError(null);
+      const response = await axios.post(
+        "http://localhost:3000/driver/details",
+        {
+          driver_id: localStorage.getItem("driver_id"),
+        },
         {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
           },
         }
       );
-      if (res.status === 200) {
-        console.log("Driver updated successfully:", res.data);
-        // Optionally, provide user feedback
-      } else {
-        console.log("Failed to update driver:", res.status, res.data);
+
+      if (response.status === 200) {
+        setFormData(response.data);
       }
-    } catch (error) {
-      console.error("Error updating driver:", error);
+    } catch (err) {
+      setError("Failed to fetch driver details. Please try again.");
+      console.error("Error fetching driver data:", err);
+    } finally {
+      setLoading(false);
     }
   };
 
+  const handleChange = (e) => {
+    setFormData({
+      ...formData,
+      [e.target.name]: e.target.value
+    });
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      setLoading(true);
+      setError(null);
+      setSuccess(false);
+
+      const response = await axios.post(
+        "http://localhost:3000/driver/update",
+        {
+          driver_id: localStorage.getItem("driver_id"),
+          name: formData.name,
+          email: formData.email,
+          phone: formData.phone,
+          vehicle_type: formData.vehicle_type,
+          model: formData.model,
+          vehicle_number: formData.vehicle_number
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
+          },
+        }
+      );
+
+      if (response.status === 200) {
+        setSuccess(true);
+        await fetchDriverData();
+        setTimeout(() => setSuccess(false), 3000);
+      }
+    } catch (err) {
+      setError("Failed to update profile. Please try again.");
+      console.error("Error updating driver:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (loading && !formData.name) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-blue-100 flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-4 border-blue-500 border-t-transparent"></div>
+      </div>
+    );
+  }
+
   return (
-    <div
-      style={{ backgroundImage: `url(${driver})` }}
-      className="min-h-screen bg-no-repeat bg-cover flex flex-col items-center p-10"
-    >
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-blue-100">
       <Sidebar />
-      <h1 className="text-4xl font-bold">Edit Profile</h1>
-
-      <div className="mt-10 backdrop-blur-xl rounded-xl shadow-xl p-10 w-1/3">
-        <form name="max-w-sm mx-auto" onSubmit={handleSubmit}>
-          {/* Name field */}
-          <div className="mb-5">
-            <label
-              htmlFor="name"
-              className="block mb-2 text-sm font-medium text-black"
-            >
-              Name
-            </label>
-            <input
-              type="string"
-              id="name"
-              className="shadow-sm bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500 dark:shadow-sm-light"
-              required
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-            />
+      <div className="p-6 sm:p-10 max-w-3xl mx-auto">
+        <div className="bg-white/70 backdrop-blur-sm rounded-2xl shadow-lg p-8">
+          <div className="flex justify-between items-center mb-8">
+            <h1 className="text-3xl font-bold text-gray-800">Edit Profile</h1>
           </div>
 
-          {/* License field */}
-          <div className="mb-5">
-            <label
-              htmlFor="license"
-              className="block mb-2 text-sm font-medium text-black"
-            >
-              License
-            </label>
-            <input
-              type="string"
-              id="license"
-              className="shadow-sm bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500 dark:shadow-sm-light"
-              required
-              value={license}
-              onChange={(e) => setLicense(e.target.value)}
-            />
-          </div>
+          {error && (
+            <div className="bg-red-50 text-red-600 p-4 rounded-lg mb-6">
+              {error}
+            </div>
+          )}
 
-          {/* Model field */}
-          <div className="mb-5">
-            <label
-              htmlFor="model"
-              className="block mb-2 text-sm font-medium text-black"
-            >
-              Car Model
-            </label>
-            <input
-              type="string"
-              id="model"
-              className="shadow-sm bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500 dark:shadow-sm-light"
-              required
-              value={model}
-              onChange={(e) => setModel(e.target.value)}
-            />
-          </div>
+          {success && (
+            <div className="bg-green-50 text-green-600 p-4 rounded-lg mb-6">
+              Profile updated successfully!
+            </div>
+          )}
 
-          {/* Phone number field */}
-          <div className="mb-5">
-            <label
-              htmlFor="phone"
-              className="block mb-2 text-sm font-medium text-black"
-            >
-              Phone number
-            </label>
-            <input
-              type="string"
-              id="phone"
-              className="shadow-sm bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500 dark:shadow-sm-light"
-              required
-              value={phone}
-              onChange={(e) => setPhone(e.target.value)}
-            />
-          </div>
+          <form onSubmit={handleSubmit} className="space-y-6">
+            {/* Profile Header */}
+            <div className="flex items-center gap-6 mb-8">
+              <div className="w-24 h-24 bg-blue-100 rounded-full flex items-center justify-center">
+                <BiCar className="w-12 h-12 text-blue-600" />
+              </div>
+              <div className="flex-1">
+                <input
+                  type="text"
+                  name="name"
+                  value={formData.name || ""}
+                  onChange={handleChange}
+                  placeholder="Your Name"
+                  className="w-full text-2xl font-semibold text-gray-800 bg-transparent border-b border-gray-300 focus:border-blue-500 focus:ring-0 placeholder-gray-400"
+                  required
+                />
+              </div>
+            </div>
 
-          {/* Save button */}
-          <button
-            type="submit"
-            className="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800 w-full"
-          >
-            Save
-          </button>
-        </form>
+            {/* Profile Details */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <label className="block text-sm font-medium text-gray-500 mb-2">
+                  <div className="flex items-center gap-2">
+                    <FiMail className="w-4 h-4" />
+                    Email
+                  </div>
+                </label>
+                <input
+                  type="email"
+                  name="email"
+                  value={formData.email || ""}
+                  onChange={handleChange}
+                  className="w-full rounded-lg border-gray-300 focus:border-blue-500 focus:ring-blue-500"
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-500 mb-2">
+                  <div className="flex items-center gap-2">
+                    <FiPhone className="w-4 h-4" />
+                    Phone Number
+                  </div>
+                </label>
+                <input
+                  type="tel"
+                  name="phone"
+                  value={formData.phone || ""}
+                  onChange={handleChange}
+                  className="w-full rounded-lg border-gray-300 focus:border-blue-500 focus:ring-blue-500"
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-500 mb-2">
+                  <div className="flex items-center gap-2">
+                    <BiCar className="w-4 h-4" />
+                    Vehicle Type
+                  </div>
+                </label>
+                <select
+                  name="vehicle_type"
+                  value={formData.vehicle_type || ""}
+                  onChange={handleChange}
+                  className="w-full rounded-lg border-gray-300 focus:border-blue-500 focus:ring-blue-500"
+                  required
+                >
+                  <option value="">Select Vehicle Type</option>
+                  <option value="car">Car</option>
+                  <option value="bike">Bike</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-500 mb-2">
+                  <div className="flex items-center gap-2">
+                    <BiCar className="w-4 h-4" />
+                    Vehicle Model
+                  </div>
+                </label>
+                <input
+                  type="text"
+                  name="model"
+                  value={formData.model || ""}
+                  onChange={handleChange}
+                  className="w-full rounded-lg border-gray-300 focus:border-blue-500 focus:ring-blue-500"
+                  placeholder={formData.vehicle_type === 'bike' ? "Enter Bike Model" : "Enter Car Model"}
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-500 mb-2">
+                  <div className="flex items-center gap-2">
+                    <BiCar className="w-4 h-4" />
+                    Vehicle Number
+                  </div>
+                </label>
+                <input
+                  type="text"
+                  name="vehicle_number"
+                  value={formData.vehicle_number || ""}
+                  onChange={handleChange}
+                  className="w-full rounded-lg border-gray-300 focus:border-blue-500 focus:ring-blue-500"
+                  required
+                />
+              </div>
+            </div>
+
+            {/* Action Buttons */}
+            <div className="flex gap-4 pt-6">
+              <button
+                type="submit"
+                disabled={loading}
+                className="flex-1 bg-blue-600 text-white py-2 px-4 rounded-lg font-medium hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200 flex items-center justify-center gap-2"
+              >
+                {loading ? (
+                  <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                ) : (
+                  <>
+                    <FiSave className="w-5 h-5" />
+                    Save Changes
+                  </>
+                )}
+              </button>
+            </div>
+          </form>
+        </div>
       </div>
     </div>
   );

@@ -1,14 +1,12 @@
 import React, { useState, useEffect } from "react";
 import Sidebar from "./Sidebar";
 import axios from "axios";
-import { FiUser, FiMail, FiPhone, FiCalendar, FiEdit2 } from "react-icons/fi";
+import { FiUser, FiMail, FiPhone, FiCalendar } from "react-icons/fi";
 import { BiCar } from "react-icons/bi";
 
 function DriverProfile() {
   const [driverDetails, setDriverDetails] = useState({});
   const [memberSince, setMemberSince] = useState(new Date().getFullYear());
-  const [isEditing, setIsEditing] = useState(false);
-  const [editedDetails, setEditedDetails] = useState({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -34,7 +32,6 @@ function DriverProfile() {
 
       if (response.status === 200) {
         setDriverDetails(response.data);
-        setEditedDetails(response.data);
         
         // Set member since year from registration date
         if (response.data.createdAt || response.data.registrationDate) {
@@ -48,52 +45,6 @@ function DriverProfile() {
     } finally {
       setLoading(false);
     }
-  };
-
-  const handleEdit = () => {
-    setIsEditing(true);
-    setEditedDetails({ ...driverDetails });
-  };
-
-  const handleSave = async () => {
-    try {
-      setLoading(true);
-      setError(null);
-      const response = await axios.post(
-        "http://localhost:3000/driver/update",
-        {
-          driver_id: localStorage.getItem("driver_id"),
-          ...editedDetails,
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
-          },
-        }
-      );
-
-      if (response.status === 200) {
-        setDriverDetails(editedDetails);
-        setIsEditing(false);
-      }
-    } catch (err) {
-      setError("Failed to update driver details. Please try again.");
-      console.error("Error updating driver details:", err);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleCancel = () => {
-    setIsEditing(false);
-    setEditedDetails(driverDetails);
-  };
-
-  const handleChange = (e) => {
-    setEditedDetails({
-      ...editedDetails,
-      [e.target.name]: e.target.value,
-    });
   };
 
   if (loading && !driverDetails.name) {
@@ -111,15 +62,6 @@ function DriverProfile() {
         <div className="bg-white/70 backdrop-blur-sm rounded-2xl shadow-lg p-8">
           <div className="flex justify-between items-center mb-8">
             <h1 className="text-3xl font-bold text-gray-800">Driver Profile</h1>
-            {!isEditing && (
-              <button
-                onClick={handleEdit}
-                className="flex items-center gap-2 text-blue-600 hover:text-blue-700 font-medium"
-              >
-                <FiEdit2 className="w-4 h-4" />
-                Edit Profile
-              </button>
-            )}
           </div>
 
           {error && (
@@ -136,17 +78,7 @@ function DriverProfile() {
               </div>
               <div>
                 <h2 className="text-2xl font-semibold text-gray-800">
-                  {isEditing ? (
-                    <input
-                      type="text"
-                      name="name"
-                      value={editedDetails.name || ""}
-                      onChange={handleChange}
-                      className="w-full rounded-lg border-gray-300 focus:border-blue-500 focus:ring-blue-500"
-                    />
-                  ) : (
-                    driverDetails.name
-                  )}
+                  {driverDetails.name || "Driver"}
                 </h2>
                 <div className="flex items-center gap-2 text-gray-500 mt-1">
                   <FiCalendar className="w-4 h-4" />
@@ -161,20 +93,10 @@ function DriverProfile() {
                 <label className="block text-sm font-medium text-gray-500 mb-2">
                   <div className="flex items-center gap-2">
                     <FiUser className="w-4 h-4" />
-                    Username
+                    Name
                   </div>
                 </label>
-                {isEditing ? (
-                  <input
-                    type="text"
-                    name="username"
-                    value={editedDetails.username || ""}
-                    onChange={handleChange}
-                    className="w-full rounded-lg border-gray-300 focus:border-blue-500 focus:ring-blue-500"
-                  />
-                ) : (
-                  <p className="text-gray-800">{driverDetails.username}</p>
-                )}
+                <p className="text-gray-800">{driverDetails.name}</p>
               </div>
 
               <div>
@@ -184,17 +106,7 @@ function DriverProfile() {
                     Email
                   </div>
                 </label>
-                {isEditing ? (
-                  <input
-                    type="email"
-                    name="email"
-                    value={editedDetails.email || ""}
-                    onChange={handleChange}
-                    className="w-full rounded-lg border-gray-300 focus:border-blue-500 focus:ring-blue-500"
-                  />
-                ) : (
-                  <p className="text-gray-800">{driverDetails.email}</p>
-                )}
+                <p className="text-gray-800">{driverDetails.email}</p>
               </div>
 
               <div>
@@ -204,17 +116,27 @@ function DriverProfile() {
                     Phone Number
                   </div>
                 </label>
-                {isEditing ? (
-                  <input
-                    type="tel"
-                    name="phone"
-                    value={editedDetails.phone || ""}
-                    onChange={handleChange}
-                    className="w-full rounded-lg border-gray-300 focus:border-blue-500 focus:ring-blue-500"
-                  />
-                ) : (
-                  <p className="text-gray-800">{driverDetails.phone}</p>
-                )}
+                <p className="text-gray-800">{driverDetails.phone}</p>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-500 mb-2">
+                  <div className="flex items-center gap-2">
+                    <BiCar className="w-4 h-4" />
+                    Vehicle Type
+                  </div>
+                </label>
+                <p className="text-gray-800 capitalize">{driverDetails.vehicle_type}</p>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-500 mb-2">
+                  <div className="flex items-center gap-2">
+                    <BiCar className="w-4 h-4" />
+                    Vehicle Model
+                  </div>
+                </label>
+                <p className="text-gray-800">{driverDetails.model}</p>
               </div>
 
               <div>
@@ -224,39 +146,9 @@ function DriverProfile() {
                     Vehicle Number
                   </div>
                 </label>
-                {isEditing ? (
-                  <input
-                    type="text"
-                    name="vehicleNumber"
-                    value={editedDetails.vehicleNumber || ""}
-                    onChange={handleChange}
-                    className="w-full rounded-lg border-gray-300 focus:border-blue-500 focus:ring-blue-500"
-                  />
-                ) : (
-                  <p className="text-gray-800">{driverDetails.vehicleNumber}</p>
-                )}
+                <p className="text-gray-800">{driverDetails.vehicle_number}</p>
               </div>
             </div>
-
-            {/* Edit Buttons */}
-            {isEditing && (
-              <div className="flex gap-4 pt-4">
-                <button
-                  onClick={handleSave}
-                  disabled={loading}
-                  className="flex-1 bg-blue-600 text-white py-2 px-4 rounded-lg font-medium hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                >
-                  {loading ? "Saving..." : "Save Changes"}
-                </button>
-                <button
-                  onClick={handleCancel}
-                  disabled={loading}
-                  className="flex-1 bg-gray-100 text-gray-800 py-2 px-4 rounded-lg font-medium hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                >
-                  Cancel
-                </button>
-              </div>
-            )}
           </div>
         </div>
       </div>

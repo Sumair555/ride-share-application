@@ -1,199 +1,295 @@
-// import React from "react";
-// import driver from "../../public/driver.jpeg";
-// import Sidebar from "./Sidebar";
-// function DriverDashboard() {
-//   return (
-//     <div
-//       className={`flex flex-col items-center min-h-screen bg-no-repeat bg-cover outline-none`}
-//       style={{ backgroundImage: `url(${driver})` }}
-//     >
-//       <Sidebar />
-//       <h1 className="text-5xl font-bold pt-5 text-black">Dashboard</h1>
-
-//       {/* form */}
-//       <div className=" mt-10 backdrop-blur-xl rounded-xl shadow-xl p-10 w-1/3">
-//         <form name="max-w-sm mx-auto">
-//           <div className="flex justify-between">
-//             <div className="mb-5">
-//               <label
-//                 htmlFor="from"
-//                 className="block mb-2 text-sm font-medium text-black"
-//               >
-//                 From
-//               </label>
-//               <input
-//                 type="string"
-//                 id="from"
-//                 className="shadow-sm bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500 dark:shadow-sm-light"
-//                 required
-//               />
-//             </div>
-//             <div className="mb-5">
-//               <label
-//                 htmlFor="to"
-//                 className="block mb-2 text-sm font-medium text-black "
-//               >
-//                 To
-//               </label>
-//               <input
-//                 type="string"
-//                 id="to"
-//                 className="shadow-sm bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500 dark:shadow-sm-light"
-//                 required
-//               />
-//             </div>
-//           </div>
-
-//           <div className="mb-5">
-//             <label
-//               htmlFor="date"
-//               className="block mb-2 text-sm font-medium text-gray-900 dark:text-black"
-//             >
-//               Date
-//             </label>
-//             <input
-//               type="date"
-//               id="date"
-//               className="shadow-sm bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500 dark:shadow-sm-light"
-//               required
-//             />
-//           </div>
-
-//           <div className="flex justify-between">
-//             <div className="mb-5">
-//               <label
-//                 htmlFor="seats"
-//                 className="block mb-2 text-sm font-medium text-black"
-//               >
-//                 Seats
-//               </label>
-//               <input
-//                 type="number"
-//                 id="seats"
-//                 className="shadow-sm bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500 dark:shadow-sm-light"
-//                 required
-//               />
-//             </div>
-//             <div className="mb-5">
-//               <label
-//                 htmlFor="price"
-//                 className="block mb-2 text-sm font-medium text-black "
-//               >
-//                 Price
-//               </label>
-//               <input
-//                 type="string"
-//                 id="price"
-//                 className="shadow-sm bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500 dark:shadow-sm-light"
-//                 required
-//               />
-//             </div>
-//           </div>
-
-//           <button
-//             type="submit"
-//             className="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800 w-full"
-//           >
-//             Save
-//           </button>
-//         </form>
-//       </div>
-
-//       <ul className="text-black mt-10  p-5 w-3/4 backdrop-blur-xl mb-10 overflow-y-scroll  h-[200px] rounded-lg shadow-lg">
-//         <li className="p-2 border-black  w-full flex items-center justify-around font-bold text-xl m-2 shadow-2xl">
-//           <div className="flex gap-x-6 items-start">
-//             <p>1.</p>
-//             <div>
-//               <p>11/11/11</p>
-//               <div className="flex gap-x-4">
-//                 <p>from : guntur </p>
-//                 <p>to : vijayawada</p>
-//               </div>
-//               <p>seats : 5 </p>
-//             </div>
-//           </div>
-//           <div className="flex gap-x-2">
-//             <p>price</p>
-//           </div>
-//           <button className="bg-red-600 text-white px-4 py-1 rounded-lg">
-//             🗑️
-//           </button>
-//         </li>
-//       </ul>
-//     </div>
-//   );
-// }
-
-// export default DriverDashboard;
-
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-import driver from "../../public/driver.jpeg";
 import Sidebar from "./Sidebar";
+import { FiMapPin, FiCalendar, FiUsers, FiPlus, FiTrash2, FiClock } from "react-icons/fi";
+import { BiCar, BiRupee } from "react-icons/bi";
 
 function DriverDashboard() {
-  // Define state variables
-  const [rides, setRides] = useState();
-  const [from, setFrom] = useState("");
-  const [to, setTo] = useState("");
+  const [rides, setRides] = useState([]);
+  const [fromLocation, setFromLocation] = useState("SRM University");
+  const [toLocation, setToLocation] = useState("");
   const [date, setDate] = useState("");
+  const [time, setTime] = useState("");
   const [seats, setSeats] = useState("");
   const [price, setPrice] = useState("");
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [success, setSuccess] = useState(false);
 
+  const locations = {
+    university: "SRM University",
+    cities: ["Vijayawada", "Tenali", "Guntur", "Mangalagiri"]
+  };
 
-  const driverId = localStorage.getItem("driver_id"); // Assuming you have the driver's ID stored in localStorage
+  const driverId = localStorage.getItem("driver_id");
 
-  // Fetch all rides and filter by the driver's ID
-  // useEffect(() => {
-  const fetchRides = async () => {
+  const handleFromLocationChange = (e) => {
+    const selectedFrom = e.target.value;
+    setFromLocation(selectedFrom);
+    
+    // If selected location is not university, set to location as university
+    if (selectedFrom !== locations.university) {
+      setToLocation(locations.university);
+    } else {
+      setToLocation(""); // Reset to location if from is university
+    }
+  };
+
+  const handleCreateRide = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    setError("");
+    setSuccess(false);
+
     try {
-      // Fetch all rides from the API
-      const response = await axios.post(
-        "http://localhost:3000/driver/rides",
-        {
-          driver_id: localStorage.getItem("driver_id"),
+      // Validate inputs
+      if (!fromLocation || !toLocation || !date || !time || !seats || !price) {
+        throw new Error("Please fill in all fields");
+      }
+
+      if (fromLocation === toLocation) {
+        throw new Error("From and To locations cannot be the same");
+      }
+
+      if (parseInt(seats) < 1) {
+        throw new Error("Number of seats must be at least 1");
+      }
+
+      if (parseInt(price) < 0) {
+        throw new Error("Price cannot be negative");
+      }
+
+      // Format date and time properly
+      const [hours, minutes] = time.split(':');
+      const rideDateTime = new Date(date);
+      rideDateTime.setHours(parseInt(hours), parseInt(minutes), 0);
+
+      // Check if the date and time are in the past
+      if (rideDateTime < new Date()) {
+        throw new Error("Cannot create a ride for a past date and time");
+      }
+
+      const rideData = {
+        driver: driverId,
+        from: {
+          country: "India",
+          state: "Andhra Pradesh",
+          place: fromLocation
         },
+        to: {
+          country: "India",
+          state: "Andhra Pradesh",
+          place: toLocation
+        },
+        date: rideDateTime.toISOString(),
+        seats: parseInt(seats),
+        cost: parseInt(price),
+        available: true
+      };
+
+      console.log("Creating ride with data:", rideData);
+
+      const response = await axios.post(
+        "http://localhost:3000/ride/create",
+        rideData,
         {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
+            'Content-Type': 'application/json'
           },
         }
       );
-      console.log(response.data);
 
-      // Check if the request was successful
-      if (response.status === 200) {
-        // Set the filtered rides in the state
-        setRides(response.data);
-        console.log(rides);
-      } else {
-        console.log("Failed to fetch rides:", response.data);
+      console.log("Ride creation response:", response.data);
+
+      if (response.status === 200 || response.status === 201) {
+        console.log("Ride created successfully:", response.data);
+        setSuccess(true);
+        resetForm();
+        // Fetch rides immediately after creating a new one
+        await fetchRides();
       }
-    } catch (error) {
-      console.error("Error fetching rides:", error);
+    } catch (err) {
+      console.error("Error creating ride:", err);
+      
+      if (err.response?.status === 404) {
+        setError("Failed to create ride. Please try again.");
+      } else if (err.response?.status === 401) {
+        setError("Session expired. Please login again.");
+        localStorage.removeItem("accessToken");
+        localStorage.removeItem("driver_id");
+        window.location.href = "/driver/login";
+      } else if (err.response?.data?.error) {
+        setError(err.response.data.error);
+      } else if (err.message) {
+        setError(err.message);
+      } else {
+        setError("Failed to create ride. Please try again.");
+      }
+    } finally {
+      setLoading(false);
     }
+  };
+
+  const resetForm = () => {
+    setFromLocation("SRM University");
+    setToLocation("");
+    setDate("");
+    setTime("");
+    setSeats("");
+    setPrice("");
   };
 
   useEffect(() => {
-    fetchRides();
+    const checkAuthAndLoadData = async () => {
+      console.log("Starting dashboard initialization...");
+      
+      // Check for required authentication data
+      const accessToken = localStorage.getItem("accessToken");
+      const driverId = localStorage.getItem("driver_id");
+
+      console.log("Auth data check:", {
+        hasAccessToken: !!accessToken,
+        hasDriverId: !!driverId,
+        driverId: driverId
+      });
+
+      if (!accessToken || !driverId) {
+        console.log("Missing authentication data, redirecting to login");
+        window.location.href = "/driver/login";
+        return;
+      }
+
+      try {
+        console.log("Validating driver authentication...");
+        const validateResponse = await axios.get(
+          `http://localhost:3000/driver/${driverId}/validate`,
+          {
+            headers: {
+              Authorization: `Bearer ${accessToken}`
+            },
+          }
+        );
+
+        console.log("Driver validation successful:", validateResponse.data);
+
+        // Set loading state before fetching rides
+        setLoading(true);
+        console.log("Fetching rides for driver:", driverId);
+        
+        const ridesResponse = await axios.get(
+          `http://localhost:3000/driver/${driverId}/rides`,
+          {
+            headers: {
+              Authorization: `Bearer ${accessToken}`
+            },
+          }
+        );
+
+        console.log("Rides fetched successfully:", ridesResponse.data);
+        
+        if (Array.isArray(ridesResponse.data)) {
+          // Filter out past rides
+          const now = new Date();
+          const upcomingRides = ridesResponse.data.filter(ride => {
+            const rideDate = new Date(ride.date);
+            return rideDate >= now;
+          }).sort((a, b) => new Date(a.date) - new Date(b.date));
+          
+          setRides(upcomingRides);
+        } else {
+          console.error("Invalid rides data format:", ridesResponse.data);
+          setError("Failed to load rides data");
+        }
+        
+        setLoading(false);
+
+      } catch (err) {
+        console.error("Dashboard initialization error:", {
+          error: err,
+          response: err.response?.data,
+          status: err.response?.status
+        });
+
+        if (err.response?.status === 401) {
+          console.log("Authentication failed, clearing tokens and redirecting...");
+          localStorage.removeItem("accessToken");
+          localStorage.removeItem("driver_id");
+          window.location.href = "/driver/login";
+          return;
+        }
+
+        setError(err.response?.data?.message || "Failed to load dashboard data. Please try again.");
+        setLoading(false);
+      }
+    };
+
+    checkAuthAndLoadData();
   }, []);
 
-
-  // Function to handle creating a ride
-  const handleCreateRide = async (e) => {
-    e.preventDefault();
-
-    // Create a new ride
+  const fetchRides = async () => {
     try {
+      console.log("Fetching rides for driver:", driverId);
+      setLoading(true);
+      setError(null);
+
+      if (!driverId) {
+        throw new Error("Driver ID not found");
+      }
+
       const response = await axios.post(
-        "http://localhost:3000/ride/create",
+        "http://localhost:3000/driver/rides",
         {
-          driverId: driverId, // Include driver's ID in the request
-          from,
-          to,
-          date,
-          seats,
-          cost: price,
+          driver_id: driverId,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("accessToken")}`
+          },
+        }
+      );
+
+      console.log("Rides fetch response:", response.data);
+
+      if (response.status === 200) {
+        // Filter out past rides
+        const now = new Date();
+        const upcomingRides = response.data.filter(ride => {
+          const rideDate = new Date(ride.date);
+          return rideDate >= now;
+        }).sort((a, b) => new Date(a.date) - new Date(b.date));
+        
+        console.log("Filtered upcoming rides:", upcomingRides);
+        setRides(upcomingRides);
+      }
+    } catch (err) {
+      console.error("Error fetching rides:", {
+        error: err,
+        response: err.response?.data,
+        status: err.response?.status
+      });
+      if (err.response?.status === 401) {
+        setError("Session expired. Please log in again.");
+        localStorage.removeItem("accessToken");
+        localStorage.removeItem("driver_id");
+        window.location.href = "/driver/login";
+      } else {
+        setError("Failed to fetch rides. Please try again.");
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleDeleteRide = async (rideId) => {
+    try {
+      setLoading(true);
+      setError(null);
+      const response = await axios.post(
+        "http://localhost:3000/ride/delete",
+        {
+          ride_id: rideId,
+          driver_id: driverId,
         },
         {
           headers: {
@@ -202,159 +298,308 @@ function DriverDashboard() {
         }
       );
 
-      if (response.status === 201) {
-        console.log("Ride created successfully:", response.data);
-        // Reset the form inputs
-        setFrom("");
-        setTo("");
-        setDate("");
-        setSeats("");
-        setPrice("");
+      if (response.status === 200) {
         fetchRides();
-        // Fetch updated rides after creating a new ride
-      } else {
-        console.log("Failed to create ride:", response.data);
       }
-    } catch (error) {
-      console.error("Error creating ride:", error);
+    } catch (err) {
+      setError("Failed to delete ride. Please try again.");
+      console.error("Error deleting ride:", err);
+    } finally {
+      setLoading(false);
     }
   };
 
+  const formatDate = (dateString) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric'
+    });
+  };
+
+  const formatIndianPrice = (price) => {
+    const number = parseInt(price);
+    if (isNaN(number)) return "0";
+    
+    const formatted = number.toLocaleString('en-IN', {
+      maximumFractionDigits: 0,
+      useGrouping: true
+    });
+    
+    return formatted;
+  };
+
+  const formatLocation = (location) => {
+    if (typeof location === 'string') {
+      return location;
+    }
+    
+    if (location && typeof location === 'object' && location.place) {
+      return location.place;
+    }
+    
+    return "Location not specified";
+  };
+
   return (
-    <div
-      className={`flex flex-col items-center min-h-screen bg-no-repeat bg-cover outline-none`}
-      style={{ backgroundImage: `url(${driver})` }}
-    >
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-blue-100">
       <Sidebar />
-      <h1 className="text-5xl font-bold pt-5 text-black">Dashboard</h1>
+      <div className="p-6 sm:p-10 max-w-6xl mx-auto">
+        <div className="flex flex-col lg:flex-row gap-8">
+          {/* Create Ride Form */}
+          <div className="lg:w-1/3">
+            <div className="bg-white/95 backdrop-blur-sm rounded-2xl shadow-lg p-6">
+              <div className="flex items-center gap-3 mb-6">
+                <div className="p-2 bg-blue-100 rounded-lg">
+                  <BiCar className="w-6 h-6 text-blue-600" />
+                </div>
+                <h2 className="text-xl font-semibold text-gray-800">Create Ride</h2>
+              </div>
 
-      {/* Form for creating a ride */}
-      <div className="mt-10 backdrop-blur-xl rounded-xl shadow-xl p-10 w-1/3">
-        <form onSubmit={handleCreateRide}>
-          <div className="flex justify-between">
-            <div className="mb-5">
-              <label
-                htmlFor="from"
-                className="block mb-2 text-sm font-medium text-black"
-              >
-                From
+              {error && (
+                <div className="bg-red-50 text-red-600 p-4 rounded-lg mb-6">
+                  {error}
+                </div>
+              )}
+
+              {success && (
+                <div className="bg-green-50 text-green-600 p-4 rounded-lg mb-6">
+                  Ride created successfully!
+                </div>
+              )}
+
+              <form onSubmit={handleCreateRide} className="space-y-4">
+                {/* From Location */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <div className="flex items-center gap-2">
+                      <FiMapPin className="w-4 h-4" />
+                      From Location
+                    </div>
+                  </label>
+                  <select
+                    value={fromLocation}
+                    onChange={handleFromLocationChange}
+                    className="w-full rounded-lg border border-gray-300 bg-gray-50 px-4 py-2.5 focus:border-blue-500 focus:ring-2 focus:ring-blue-500 focus:ring-opacity-20 focus:bg-white transition-colors duration-200"
+                    required
+                  >
+                    <option value={locations.university}>{locations.university}</option>
+                    {locations.cities.map(city => (
+                      <option key={city} value={city}>{city}</option>
+                    ))}
+                  </select>
+                </div>
+
+                {/* To Location */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <div className="flex items-center gap-2">
+                      <FiMapPin className="w-4 h-4" />
+                      To Location
+                    </div>
               </label>
+                  {fromLocation === locations.university ? (
+                    <select
+                      value={toLocation}
+                      onChange={(e) => setToLocation(e.target.value)}
+                      className="w-full rounded-lg border border-gray-300 bg-gray-50 px-4 py-2.5 focus:border-blue-500 focus:ring-2 focus:ring-blue-500 focus:ring-opacity-20 focus:bg-white transition-colors duration-200"
+                      required
+                    >
+                      <option value="">Select destination</option>
+                      {locations.cities.map(city => (
+                        <option key={city} value={city}>{city}</option>
+                      ))}
+                    </select>
+                  ) : (
               <input
                 type="text"
-                id="from"
-                value={from}
-                onChange={(e) => setFrom(e.target.value)}
-                className="shadow-sm bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500 dark:shadow-sm-light"
+                      value={locations.university}
+                      className="w-full rounded-lg border border-gray-300 bg-gray-100 px-4 py-2.5 cursor-not-allowed text-gray-500"
+                      disabled
+                    />
+                  )}
+                </div>
+
+                {/* Date and Time */}
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      <div className="flex items-center gap-2">
+                        <FiCalendar className="w-4 h-4" />
+                        Date
+                      </div>
+                    </label>
+                    <input
+                      type="date"
+                      value={date}
+                      onChange={(e) => setDate(e.target.value)}
+                      min={new Date().toISOString().split('T')[0]}
+                      className="w-full rounded-lg border border-gray-300 bg-gray-50 px-4 py-2.5 focus:border-blue-500 focus:ring-2 focus:ring-blue-500 focus:ring-opacity-20 focus:bg-white transition-colors duration-200"
                 required
               />
             </div>
-            <div className="mb-5">
-              <label
-                htmlFor="to"
-                className="block mb-2 text-sm font-medium text-black "
-              >
-                To
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      <div className="flex items-center gap-2">
+                        <FiClock className="w-4 h-4" />
+                        Time
+                      </div>
               </label>
               <input
-                type="text"
-                id="to"
-                value={to}
-                onChange={(e) => setTo(e.target.value)}
-                className="shadow-sm bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500 dark:shadow-sm-light"
+                      type="time"
+                      value={time}
+                      onChange={(e) => setTime(e.target.value)}
+                      className="w-full rounded-lg border border-gray-300 bg-gray-50 px-4 py-2.5 focus:border-blue-500 focus:ring-2 focus:ring-blue-500 focus:ring-opacity-20 focus:bg-white transition-colors duration-200"
                 required
               />
             </div>
           </div>
 
-          <div className="mb-5">
-            <label
-              htmlFor="date"
-              className="block mb-2 text-sm font-medium text-gray-900 dark:text-black"
-            >
-              Date
-            </label>
-            <input
-              type="date"
-              id="date"
-              value={date}
-              onChange={(e) => setDate(e.target.value)}
-              className="shadow-sm bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500 dark:shadow-sm-light"
-              required
-            />
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      <div className="flex items-center gap-2">
+                        <FiUsers className="w-4 h-4" />
+                        Seats
           </div>
-
-          <div className="flex justify-between">
-            <div className="mb-5">
-              <label
-                htmlFor="seats"
-                className="block mb-2 text-sm font-medium text-black"
-              >
-                Seats
               </label>
               <input
                 type="number"
-                id="seats"
                 value={seats}
                 onChange={(e) => setSeats(e.target.value)}
-                className="shadow-sm bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500 dark:shadow-sm-light"
+                      className="w-full rounded-lg border border-gray-300 bg-gray-50 px-4 py-2.5 focus:border-blue-500 focus:ring-2 focus:ring-blue-500 focus:ring-opacity-20 focus:bg-white transition-colors duration-200"
                 required
+                      min="1"
               />
             </div>
-            <div className="mb-5">
-              <label
-                htmlFor="price"
-                className="block mb-2 text-sm font-medium text-black "
-              >
-                Price
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      <div className="flex items-center gap-2">
+                        <BiRupee className="w-4 h-4" />
+                        Price per seat
+                      </div>
               </label>
               <input
-                type="text"
-                id="price"
+                      type="number"
                 value={price}
                 onChange={(e) => setPrice(e.target.value)}
-                className="shadow-sm bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500 dark:shadow-sm-light"
+                      className="w-full rounded-lg border border-gray-300 bg-gray-50 px-4 py-2.5 focus:border-blue-500 focus:ring-2 focus:ring-blue-500 focus:ring-opacity-20 focus:bg-white transition-colors duration-200"
                 required
+                      min="0"
+                      placeholder="Enter amount"
               />
             </div>
           </div>
 
           <button
             type="submit"
-            className="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800 w-full"
-          >
-            Save
+                  disabled={loading}
+                  className="w-full bg-blue-600 text-white py-2 px-4 rounded-lg font-medium hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200 flex items-center justify-center gap-2"
+                >
+                  {loading ? (
+                    <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                  ) : (
+                    <>
+                      <FiPlus className="w-5 h-5" />
+                      Create Ride
+                    </>
+                  )}
           </button>
         </form>
       </div>
-
-      {/* Display the filtered rides */}
-      {rides && (
-        <ul className="text-black mt-10 p-5 w-3/4 backdrop-blur-xl mb-10 overflow-y-scroll h-[200px] rounded-lg shadow-lg">
-          {rides.map((ride, index) => (
-            <li
-              key={ride._id}
-              className="p-2 border-black w-full flex items-center justify-around font-bold text-xl m-2 shadow-2xl"
-            >
-              <div className="flex gap-x-6 items-start">
-                <p>{index + 1}.</p>
-                <div>
-                  {/* Display the ride details */}
-                  <p>{new Date(ride.date).toLocaleDateString()}</p>
-                  <div className="flex gap-x-4">
-                    <p>From: {ride.from}</p>
-                    <p>To: {ride.to}</p>
                   </div>
-                  <p>Seats: {ride.seats}</p>
+
+          {/* Rides List */}
+          <div className="lg:flex-1">
+            <div className="bg-white/70 backdrop-blur-sm rounded-2xl shadow-lg p-6">
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-xl font-semibold text-gray-800">Your Rides</h2>
+                <div className="text-sm text-gray-500">
+                  {rides.length} {rides.length === 1 ? 'ride' : 'rides'} created
                 </div>
               </div>
-              <div className="flex gap-x-2">
-                <p>Price: {ride.cost}</p>
-              </div>
-              {/* Add other details or actions for each ride as needed */}
-            </li>
-          ))}
-        </ul>
+
+              {loading && rides.length === 0 ? (
+                <div className="flex items-center justify-center h-64">
+                  <div className="animate-spin rounded-full h-12 w-12 border-4 border-blue-500 border-t-transparent"></div>
+                </div>
+              ) : error ? (
+                <div className="text-center text-red-500 py-12">{error}</div>
+              ) : rides.length === 0 ? (
+                <div className="text-center text-gray-500 py-12">
+                  No rides created yet
+                </div>
+              ) : (
+                <div className="space-y-4 max-h-[600px] overflow-y-auto">
+                  {rides.map((ride) => (
+                    <div
+                      key={ride._id}
+                      className="bg-white rounded-lg shadow-sm p-4 hover:shadow-md transition-shadow duration-200"
+                    >
+                      <div className="flex items-center justify-between">
+                        <div className="flex-1">
+                          <div className="flex items-center gap-3 mb-2">
+                            <FiCalendar className="w-4 h-4 text-blue-600" />
+                            <span className="font-medium text-gray-800">
+                              {new Date(ride.date).toLocaleString('en-US', {
+                                year: 'numeric',
+                                month: 'long',
+                                day: 'numeric',
+                                hour: '2-digit',
+                                minute: '2-digit'
+                              })}
+                            </span>
+                          </div>
+
+                          <div className="flex items-start gap-3">
+                            <div className="flex flex-col items-center gap-1">
+                              <FiMapPin className="w-4 h-4 text-blue-600" />
+                              <div className="w-0.5 h-6 bg-gray-200"></div>
+                              <FiMapPin className="w-4 h-4 text-blue-600" />
+                            </div>
+                            <div>
+                              <div className="text-gray-800">
+                                <div className="font-medium">
+                                  {formatLocation(ride.from)}
+                                </div>
+                              </div>
+                              <div className="text-gray-800 mt-4">
+                                <div className="font-medium">
+                                  {formatLocation(ride.to)}
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+
+                          <div className="flex gap-4 mt-2 text-sm text-gray-600">
+                            <div className="flex items-center gap-1">
+                              <FiUsers className="w-4 h-4" />
+                              <span>{ride.seats} seats available</span>
+                            </div>
+                            <div className="flex items-center gap-1">
+                              <BiRupee className="w-4 h-4" />
+                              <span>₹{ride.cost} per seat</span>
+                            </div>
+                          </div>
+                        </div>
+
+                        <button
+                          onClick={() => handleDeleteRide(ride._id)}
+                          className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors duration-200"
+                        >
+                          <FiTrash2 className="w-5 h-5" />
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
       )}
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }

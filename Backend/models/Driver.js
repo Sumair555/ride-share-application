@@ -16,15 +16,19 @@ const DriverSchema = new Schema({
     type: String,
     required: true,
   },
-  license: {
-    type: String,
-    required: true,
-  },
   model: {
     type: String,
     required: true,
   },
   phone: {
+    type: String,
+    required: true,
+  },
+  vehicle_type: {
+    type: String,
+    required: true,
+  },
+  vehicle_number: {
     type: String,
     required: true,
   },

@@ -91,6 +91,18 @@ function DriverRides() {
     return new Date(dateString).toLocaleDateString('en-US', options);
   };
 
+  const formatLocation = (location) => {
+    if (typeof location === 'string') {
+      return location;
+    }
+    
+    if (location && typeof location === 'object') {
+      return location.place || "Location not specified";
+    }
+    
+    return "Location not specified";
+  };
+
   // Filter rides based on status and date
   const filteredRides = rides.filter(ride => {
     const rideDate = new Date(ride.date);
@@ -206,11 +218,11 @@ function DriverRides() {
                         </div>
                         <div className="flex-1">
                           <div className="mb-3">
-                            <div className="font-medium text-gray-900">{ride.from}</div>
+                            <div className="font-medium text-gray-900">{formatLocation(ride.from)}</div>
                             <div className="text-sm text-gray-500">Departure</div>
                           </div>
                           <div>
-                            <div className="font-medium text-gray-900">{ride.to}</div>
+                            <div className="font-medium text-gray-900">{formatLocation(ride.to)}</div>
                             <div className="text-sm text-gray-500">Destination</div>
                           </div>
                         </div>

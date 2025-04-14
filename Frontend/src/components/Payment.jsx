@@ -1,171 +1,292 @@
 import React, { useEffect, useState } from "react";
 import Sidebar_User from "./Sidebar_User";
-import { useLocation, useNavigate } from "react-router";
+import { useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
 import { FiMapPin, FiCalendar, FiUsers } from "react-icons/fi";
 import { BiRupee } from "react-icons/bi";
 
 function Payment() {
-  const [from, setFrom] = useState("");
-  const [to, setTo] = useState("");
-  const [date, setDate] = useState("");
-  const [seats, setSeats] = useState(0);
-  const [cost, setCost] = useState(0);
-  const [select, setSelect] = useState(0);
-  const [loading, setLoading] = useState(false);
+  const [rideDetails, setRideDetails] = useState(null);
+  const [selectedSeats, setSelectedSeats] = useState(1);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [bookingLoading, setBookingLoading] = useState(false);
 
   const navigate = useNavigate();
-  const state = useLocation().state;
+  const { rideId } = useParams();
+
+  console.log("Payment component mounted with rideId:", rideId);
 
   useEffect(() => {
-    if (!state) {
-      navigate("/user/dashboard");
-      return;
-    }
-    setFrom(state.from);
-    setTo(state.to);
-    setDate(state.date);
-    setSeats(state.seats);
-    setCost(state.cost);
-  }, [state, navigate]);
+    const fetchRideDetails = async () => {
+      try {
+        setLoading(true);
+        setError(null);
 
-  const handleSubmit = async (e) => {
+        // Check if user is logged in
+        const token = localStorage.getItem("accessToken");
+        if (!token) {
+          console.log("No access token found");
+          setError("Please login to continue");
+          navigate("/user/login");
+          return;
+        }
+
+        console.log("Fetching ride details for ID:", rideId);
+        const response = await axios.get(`http://localhost:3000/ride/${rideId}`, {
+          headers: {
+            Authorization: `bearer ${token}`
+          },
+        });
+
+        console.log("Ride details response:", response.data);
+        
+        if (response.status === 200 && response.data) {
+          setRideDetails(response.data);
+        } else {
+          console.log("Invalid response:", response);
+          setError("Failed to load ride details. Please try again.");
+        }
+      } catch (err) {
+        console.error("Error fetching ride details:", err);
+        if (err.response?.status === 401) {
+          setError("Session expired. Please login again.");
+          navigate("/user/login");
+        } else {
+          setError(err.response?.data?.message || "Failed to load ride details. Please try again.");
+        }
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (rideId) {
+      console.log("Initiating ride details fetch for ID:", rideId);
+      fetchRideDetails();
+    } else {
+      console.log("No rideId provided");
+      setError("Invalid ride ID");
+    }
+  }, [rideId, navigate]);
+
+  const handleBooking = async (e) => {
     e.preventDefault();
     try {
-      setLoading(true);
+      setBookingLoading(true);
       setError(null);
 
-      const res = await axios.post(
+      const token = localStorage.getItem("accessToken");
+      const userId = localStorage.getItem("id");
+
+      if (!token || !userId) {
+        setError("Please login to continue");
+        navigate("/user/login");
+        return;
+      }
+
+      console.log("Booking ride with details:", {
+        ride_id: rideId,
+        user_id: userId,
+        seats: selectedSeats
+      });
+
+      const response = await axios.post(
         "http://localhost:3000/ride/add",
         {
-          ride_id: state.ride_id,
-          user_id: localStorage.getItem("id"),
-          seats: select,
+          ride_id: rideId,
+          user_id: userId,
+          seats: selectedSeats,
         },
         {
           headers: {
-            Authorization: `bearer ${localStorage.getItem("accessToken")}`,
+            Authorization: `bearer ${token}`
           },
         }
       );
 
-      if (res.status === 200) {
+      console.log("Booking response:", response.data);
+
+      if (response.status === 200) {
         navigate("/user/recent");
       }
     } catch (err) {
-      setError(err.response?.data?.message || "Failed to book ride. Please try again.");
+      console.error("Error booking ride:", err);
+      if (err.response?.status === 401) {
+        setError("Session expired. Please login again.");
+        navigate("/user/login");
+      } else {
+        setError(err.response?.data?.message || "Failed to book ride. Please try again.");
+      }
     } finally {
-      setLoading(false);
+      setBookingLoading(false);
     }
   };
 
-  if (!state) {
-    return null;
+  const formatDate = (dateString) => {
+    return new Date(dateString).toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    });
+  };
+
+  const formatLocation = (location) => {
+    if (typeof location === 'string') {
+      return location;
+    }
+    
+    if (location && typeof location === 'object') {
+      const { place, district, state, country } = location;
+      if (place && district) {
+        if (country && state) {
+          return `${place}, ${district}, ${state}, ${country}`;
+        }
+        return `${place}, ${district}`;
+      }
+    }
+    
+    return "Location not specified";
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-blue-100">
+        <Sidebar_User />
+        <div className="flex items-center justify-center h-screen">
+          <div className="animate-spin rounded-full h-12 w-12 border-4 border-blue-500 border-t-transparent"></div>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-blue-100">
+        <Sidebar_User />
+        <div className="p-6 sm:p-10 max-w-xl mx-auto">
+          <div className="bg-red-50 text-red-600 p-4 rounded-lg">
+            {error}
+          </div>
+          <button
+            onClick={() => navigate("/user/dashboard")}
+            className="mt-4 w-full bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700"
+          >
+            Back to Dashboard
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  if (!rideDetails) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-blue-100">
+        <Sidebar_User />
+        <div className="p-6 sm:p-10 max-w-xl mx-auto">
+          <div className="text-center text-gray-600">
+            No ride details available
+          </div>
+          <button
+            onClick={() => navigate("/user/dashboard")}
+            className="mt-4 w-full bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700"
+          >
+            Back to Dashboard
+          </button>
+        </div>
+      </div>
+    );
   }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-blue-100">
       <Sidebar_User />
-      <div className="p-6 sm:p-10 max-w-3xl mx-auto">
-        <h1 className="text-4xl font-bold text-gray-800 mb-8 text-center">Confirm Booking</h1>
+      <div className="p-6 sm:p-10 max-w-xl mx-auto">
+        <div className="bg-white/70 backdrop-blur-sm rounded-2xl shadow-lg p-6">
+          <h2 className="text-2xl font-semibold text-gray-800 mb-6">Book Your Ride</h2>
 
-        <div className="bg-white/70 backdrop-blur-sm rounded-2xl shadow-lg p-8">
-          {/* Ride Details Summary */}
-          <div className="mb-8 space-y-6">
-            <div className="flex items-center gap-2 text-blue-600">
-              <FiCalendar className="w-5 h-5" />
-              <span className="font-medium text-gray-800">{date}</span>
-            </div>
+          <div className="space-y-6">
+            {/* Ride Details */}
+            <div className="space-y-4">
+              <div className="flex items-center gap-3">
+                <FiCalendar className="w-5 h-5 text-blue-600" />
+                <span className="font-medium text-gray-800">
+                  {formatDate(rideDetails.date)}
+                </span>
+              </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-              <div className="flex items-center gap-2">
-                <FiMapPin className="w-5 h-5 text-blue-600" />
+              <div className="flex items-start gap-3">
+                <div className="flex flex-col items-center gap-1">
+                  <FiMapPin className="w-5 h-5 text-blue-600" />
+                  <div className="w-0.5 h-6 bg-gray-200"></div>
+                  <FiMapPin className="w-5 h-5 text-blue-600" />
+                </div>
                 <div>
-                  <p className="text-sm text-gray-500">From</p>
-                  <p className="font-medium text-gray-800">{from}</p>
+                  <div className="text-gray-800">
+                    <div className="font-medium">From</div>
+                    <div>{formatLocation(rideDetails.from)}</div>
+                  </div>
+                  <div className="text-gray-800 mt-4">
+                    <div className="font-medium">To</div>
+                    <div>{formatLocation(rideDetails.to)}</div>
+                  </div>
                 </div>
               </div>
 
-              <div className="flex items-center gap-2">
-                <FiMapPin className="w-5 h-5 text-blue-600" />
-                <div>
-                  <p className="text-sm text-gray-500">To</p>
-                  <p className="font-medium text-gray-800">{to}</p>
+              <div className="flex items-center justify-between text-gray-600">
+                <div className="flex items-center gap-2">
+                  <FiUsers className="w-5 h-5" />
+                  <span>{rideDetails.seats} seats available</span>
                 </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Booking Form */}
-          <form onSubmit={handleSubmit} className="space-y-6">
-            <div>
-              <label htmlFor="seats" className="block text-sm font-medium text-gray-700 mb-2">
-                Number of Seats
-              </label>
-              <div className="relative">
-                <FiUsers className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-                <input
-                  type="number"
-                  id="seats"
-                  min="1"
-                  max={seats}
-                  value={select}
-                  onChange={(e) => {
-                    const value = parseInt(e.target.value);
-                    if (value >= 0 && value <= seats) {
-                      setSelect(value);
-                    }
-                  }}
-                  className="pl-10 w-full rounded-lg border-gray-300 focus:border-blue-500 focus:ring-blue-500"
-                  required
-                />
-              </div>
-              <p className="mt-1 text-sm text-gray-500">Available seats: {seats}</p>
-            </div>
-
-            {/* Price Summary */}
-            <div className="bg-gray-50 rounded-lg p-4">
-              <div className="flex justify-between items-center">
-                <span className="text-gray-600">Price per seat</span>
-                <div className="flex items-center gap-1 text-gray-800">
+                <div className="flex items-center gap-2">
                   <BiRupee className="w-5 h-5" />
-                  <span>{cost}</span>
-                </div>
-              </div>
-              <div className="flex justify-between items-center mt-2 text-lg font-semibold">
-                <span className="text-gray-800">Total Amount</span>
-                <div className="flex items-center gap-1 text-blue-600">
-                  <BiRupee className="w-6 h-6" />
-                  <span>{cost * select}</span>
+                  <span>₹{rideDetails.cost} per seat</span>
                 </div>
               </div>
             </div>
 
-            {error && (
-              <div className="bg-red-50 text-red-600 p-4 rounded-lg">
-                {error}
+            {/* Booking Form */}
+            <form onSubmit={handleBooking} className="space-y-6">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Number of Seats
+                </label>
+                <select
+                  value={selectedSeats}
+                  onChange={(e) => setSelectedSeats(Number(e.target.value))}
+                  className="w-full rounded-lg border-gray-300 focus:border-blue-500 focus:ring-blue-500"
+                >
+                  {[...Array(Math.min(rideDetails.seats, 5))].map((_, i) => (
+                    <option key={i + 1} value={i + 1}>
+                      {i + 1}
+                    </option>
+                  ))}
+                </select>
               </div>
-            )}
 
-            <div className="flex gap-4">
-              <button
-                type="submit"
-                disabled={loading || select === 0}
-                className="flex-1 bg-blue-600 text-white py-3 px-6 rounded-lg font-medium hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-              >
-                {loading ? "Processing..." : "Confirm Booking"}
-              </button>
-              <button
-                type="button"
-                onClick={() => navigate("/user/dashboard")}
-                disabled={loading}
-                className="flex-1 bg-gray-100 text-gray-800 py-3 px-6 rounded-lg font-medium hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-              >
-                Cancel
-              </button>
-            </div>
-          </form>
+              <div className="border-t pt-4">
+                <div className="flex justify-between items-center mb-4">
+                  <span className="text-gray-600">Total Amount:</span>
+                  <span className="text-xl font-semibold text-gray-800">
+                    ₹{rideDetails.cost * selectedSeats}
+                  </span>
+                </div>
+
+                <button
+                  type="submit"
+                  disabled={bookingLoading}
+                  className="w-full bg-blue-600 text-white py-2 px-4 rounded-lg font-medium hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
+                >
+                  {bookingLoading ? (
+                    <div className="flex items-center justify-center">
+                      <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                    </div>
+                  ) : (
+                    'Confirm Booking'
+                  )}
+                </button>
+              </div>
+            </form>
+          </div>
         </div>
       </div>
     </div>

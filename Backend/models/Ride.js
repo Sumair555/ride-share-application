@@ -2,14 +2,29 @@ const mongoose = require("mongoose");
 
 const Schema = mongoose.Schema;
 
+const LocationSchema = new Schema({
+  country: {
+    type: String,
+    required: true
+  },
+  state: {
+    type: String,
+    required: true
+  },
+  place: {
+    type: String,
+    required: true
+  }
+}, { _id: false });
+
 const RideSchema = new Schema({
   from: {
-    type: String,
-    required: true,
+    type: LocationSchema,
+    required: true
   },
   to: {
-    type: String,
-    required: true,
+    type: LocationSchema,
+    required: true
   },
   date: {
     type: Date,
@@ -25,6 +40,7 @@ const RideSchema = new Schema({
   },
   available: {
     type: Boolean,
+    default: true,
     required: true,
   },
   driver: {
@@ -32,13 +48,10 @@ const RideSchema = new Schema({
     ref: "Driver",
     required: true,
   },
-  User: [
-    {
-      type: mongoose.Types.ObjectId,
-      ref: "User",
-      required: true,
-    },
-  ],
+  users: [{
+    type: mongoose.Types.ObjectId,
+    ref: "User"
+  }]
 });
 
 module.exports = mongoose.model("Ride", RideSchema);

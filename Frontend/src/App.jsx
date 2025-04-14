@@ -32,7 +32,7 @@ function App() {
             <Route path="profile" element={<UserProfile />} />
             <Route path="edit" element={<UserEditProfile />} />
             <Route path="recent" element={<UserRides />} />
-            <Route path="pay" element={<Payment />} />
+            <Route path="payment/:rideId" element={<Payment />} />
           </Route>
 
           {/* Driver layout section */}

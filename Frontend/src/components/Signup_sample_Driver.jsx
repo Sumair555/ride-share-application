@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { useFormik } from "formik";
@@ -6,6 +6,7 @@ import { SignupSchema } from "./Schemas/Driver_schema";
 
 function Signup_sample_Driver() {
   const navigate = useNavigate();
+  const [signupError, setSignupError] = useState(null);
 
   // Formik setup
   const formik = useFormik({
@@ -13,28 +14,92 @@ function Signup_sample_Driver() {
       name: "",
       email: "",
       password: "",
-      license: "",
+      vehicle_type: "",
       model: "",
+      vehicle_number: "",
       phone: "",
     },
     validationSchema: SignupSchema,
     onSubmit: async (values, actions) => {
       try {
-        const response = await axios.post(
-          "http://localhost:3000/driver/signup",
-          values
-        );
+        setSignupError(null);
+        
+        // Format the data for the server
+        const signupData = {
+          name: values.name.trim(),
+          email: values.email.trim().toLowerCase(),
+          password: values.password,
+          phone: values.phone.trim(),
+          vehicle_type: values.vehicle_type.toLowerCase(),
+          model: values.model.trim(),
+          vehicle_number: values.vehicle_number.trim().toUpperCase(),
+          role: "driver"
+        };
 
-        const accesstoken = response.data.accesstoken;
-        localStorage.setItem("driver_id", response.data.id);
-        localStorage.setItem("accessToken", accesstoken);
+        console.log("Sending signup data:", signupData);
+        
+        try {
+          const response = await axios.post(
+            "http://localhost:3000/driver/signup",
+            signupData,
+            {
+              headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+              }
+            }
+          );
 
-        navigate("/driver/dashboard");
+          console.log("Full server response:", response);
+
+          if (response.status === 200 && response.data) {
+            console.log("Signup successful, storing data...");
+            // Store the tokens and ID
+            localStorage.setItem("driver_id", response.data.id);
+            localStorage.setItem("accessToken", response.data.accesstoken);
+            
+            // Clear any existing error
+            setSignupError(null);
+            
+            console.log("Data stored, redirecting...");
+            // Force navigation using window.location
+            window.location.href = "/driver/dashboard";
+            return; // Add return to prevent further execution
+          } else {
+            throw new Error(response.data?.message || 'Signup failed');
+          }
+        } catch (error) {
+          console.error("Signup error:", error);
+          setSignupError(
+            error.response?.data?.message || 
+            error.message || 
+            "Failed to create account. Please try again."
+          );
+          actions.setSubmitting(false);
+        }
       } catch (error) {
-        console.error("Signup failed:", error);
-        alert("Signup failed. Please try again.");
+        console.error("Detailed signup error:", {
+          message: error.message,
+          response: error.response?.data,
+          status: error.response?.status,
+          data: error.config?.data,
+          stack: error.stack
+        });
+        
+        if (error.response?.data?.message) {
+          setSignupError(error.response.data.message);
+        } else if (error.response?.status === 500) {
+          setSignupError("Server error occurred. This could be because: \n" +
+            "1. The email might already be registered\n" +
+            "2. There might be a connection issue with the database\n" +
+            "Please try again or contact support if the issue persists.");
+        } else if (error.code === 'ECONNABORTED') {
+          setSignupError("Request timed out. Please check your internet connection and try again.");
+        } else {
+          setSignupError("Signup failed. Please check your details and try again. " + error.message);
+        }
       } finally {
-        actions.resetForm();
+        actions.setSubmitting(false);
       }
     },
   });
@@ -42,6 +107,12 @@ function Signup_sample_Driver() {
   return (
     <div className="signup-form-container">
       <form onSubmit={formik.handleSubmit} className="space-y-4">
+        {signupError && (
+          <div className="p-3 rounded-lg bg-red-50 text-red-600 text-sm">
+            {signupError}
+          </div>
+        )}
+
         <div className="signup-input-wrapper">
           <input
             type="text"
@@ -96,6 +167,7 @@ function Signup_sample_Driver() {
                 : "border-sky-200 focus:ring-sky-400"
             }`}
             placeholder="Password"
+            minLength="6"
           />
           {formik.touched.password && formik.errors.password && (
             <p className="form-error">{formik.errors.password}</p>
@@ -103,22 +175,24 @@ function Signup_sample_Driver() {
         </div>
 
         <div className="signup-input-wrapper">
-          <input
-            type="text"
-            id="license"
-            name="license"
-            value={formik.values.license}
+          <select
+            id="vehicle_type"
+            name="vehicle_type"
+            value={formik.values.vehicle_type}
             onChange={formik.handleChange}
             onBlur={formik.handleBlur}
             className={`signup-input ${
-              formik.touched.license && formik.errors.license
+              formik.touched.vehicle_type && formik.errors.vehicle_type
                 ? "border-red-500 focus:ring-red-500"
                 : "border-sky-200 focus:ring-sky-400"
             }`}
-            placeholder="License Number"
-          />
-          {formik.touched.license && formik.errors.license && (
-            <p className="form-error">{formik.errors.license}</p>
+          >
+            <option value="">Select Vehicle Type</option>
+            <option value="car">Car</option>
+            <option value="bike">Bike</option>
+          </select>
+          {formik.touched.vehicle_type && formik.errors.vehicle_type && (
+            <p className="form-error">{formik.errors.vehicle_type}</p>
           )}
         </div>
 
@@ -135,10 +209,30 @@ function Signup_sample_Driver() {
                 ? "border-red-500 focus:ring-red-500"
                 : "border-sky-200 focus:ring-sky-400"
             }`}
-            placeholder="Vehicle Model"
+            placeholder={formik.values.vehicle_type === 'bike' ? "Enter Bike Model" : "Enter Car Model"}
           />
           {formik.touched.model && formik.errors.model && (
             <p className="form-error">{formik.errors.model}</p>
+          )}
+        </div>
+
+        <div className="signup-input-wrapper">
+          <input
+            type="text"
+            id="vehicle_number"
+            name="vehicle_number"
+            value={formik.values.vehicle_number}
+            onChange={formik.handleChange}
+            onBlur={formik.handleBlur}
+            className={`signup-input ${
+              formik.touched.vehicle_number && formik.errors.vehicle_number
+                ? "border-red-500 focus:ring-red-500"
+                : "border-sky-200 focus:ring-sky-400"
+            }`}
+            placeholder="Vehicle Number"
+          />
+          {formik.touched.vehicle_number && formik.errors.vehicle_number && (
+            <p className="form-error">{formik.errors.vehicle_number}</p>
           )}
         </div>
 
@@ -167,7 +261,7 @@ function Signup_sample_Driver() {
           disabled={formik.isSubmitting}
           className={`signup-button ${formik.isSubmitting ? "opacity-50" : ""}`}
         >
-          Create Account
+          {formik.isSubmitting ? "Creating Account..." : "Create Account"}
         </button>
       </form>
     </div>

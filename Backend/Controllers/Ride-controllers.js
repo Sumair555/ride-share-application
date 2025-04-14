@@ -4,34 +4,40 @@ const User = require("../models/User");
 
 const createRide = async (req, res) => {
   try {
-    const { driverId, from, to, date, seats, cost } = req.body;
-    console.log(req.body);
-    const driver = await Driver.findById(driverId);
-    if (!driver) {
+    const { driver, from, to, date, seats, cost } = req.body;
+    console.log("Received ride data:", req.body);
+
+    const driverDoc = await Driver.findById(driver);
+    if (!driverDoc) {
       return res.status(404).json({ error: "Driver not found" });
     }
-    // console.log(driver);
+
     const _date = new Date(date);
     const newRide = new Ride({
       from,
       to,
       date: _date,
       seats,
-      cost: cost,
+      cost,
       available: true,
-      driver: driver._id,
+      driver: driverDoc._id,
+      users: []
     });
 
-    await newRide.save();
+    console.log("Creating new ride:", newRide);
 
-    driver.rides.push(newRide._id);
+    const savedRide = await newRide.save();
+    console.log("Ride saved:", savedRide);
 
-    await driver.save();
+    // Add ride to driver's rides array
+    driverDoc.rides.push(savedRide._id);
+    await driverDoc.save();
+    console.log("Driver updated with new ride");
 
-    res.status(201).json(newRide);
+    res.status(201).json(savedRide);
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: "Internal server error" });
+    console.error("Error creating ride:", err);
+    res.status(500).json({ error: err.message || "Internal server error" });
   }
 };
 // const deleteRide = async (req, res) => {

@@ -133,7 +133,7 @@ function UserProfile() {
                   </div>
                   <div>
                     <p className="text-sm text-gray-500 font-medium">Name</p>
-                    <p className="text-lg font-semibold text-gray-800">{name}</p>
+                    <p className="text-lg font-semibold text-gray-800">{name || "User"}</p>
                   </div>
                 </div>
 

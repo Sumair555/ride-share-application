@@ -4,7 +4,7 @@ const Driver = require("../models/Driver");
 require("dotenv").config();
 const signUp = async (req, res, next) => {
   console.log(req.body);
-  const { name, email, password, license, model, phone } = req.body;
+  const { name, email, password, model, phone, vehicle_type, vehicle_number } = req.body;
   let existingUser;
 
   try {
@@ -18,9 +18,10 @@ const signUp = async (req, res, next) => {
       name,
       email,
       password: hashedPassword,
-      license,
       model,
       phone,
+      vehicle_type,
+      vehicle_number,
     });
 
     await driver.save(); // Wait for user to be saved
@@ -106,12 +107,12 @@ const getDetails = async (req, res) => {
 
 const updateDriver = async (req, res) => {
   try {
-    const { driver_id, name, phone, model, license } = req.body;
+    const { driver_id, name, phone, model, vehicle_type, vehicle_number } = req.body;
 
     console.log(req.body);
     const updatedDriver = await Driver.findByIdAndUpdate(
       driver_id,
-      { name, phone, model, license },
+      { name, phone, model, vehicle_type, vehicle_number },
       { new: true }
     );
 
