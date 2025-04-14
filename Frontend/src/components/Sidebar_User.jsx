@@ -1,77 +1,89 @@
 import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
+import { FaTimes, FaBars, FaUser, FaHome, FaHistory, FaEdit, FaSignOutAlt } from "react-icons/fa";
 
 const Sidebar_User = () => {
   const [showSidebar, setShowSidebar] = useState(false);
   const navigate = useNavigate();
+  const location = useLocation();
 
   const logout = async () => {
     localStorage.removeItem("accessToken");
     localStorage.removeItem("id");
     navigate("/");
   };
+
+  const menuItems = [
+    { path: "/user/dashboard", name: "Dashboard", icon: <FaHome className="w-5 h-5" /> },
+    { path: "/user/profile", name: "Profile", icon: <FaUser className="w-5 h-5" /> },
+    { path: "/user/edit", name: "Edit Profile", icon: <FaEdit className="w-5 h-5" /> },
+    { path: "/user/recent", name: "Recent Rides", icon: <FaHistory className="w-5 h-5" /> },
+  ];
+
   return (
     <>
-      {showSidebar ? (
-        <button
-          className="flex text-4xl text-white items-center cursor-pointer fixed right-10 top-6 z-50"
-          onClick={() => setShowSidebar(!showSidebar)}
-        >
-          x
-        </button>
-      ) : (
-        <svg
-          onClick={() => setShowSidebar(!showSidebar)}
-          className="fixed  z-30 flex items-center cursor-pointer right-10 top-6"
-          fill="#000000"
-          viewBox="0 0 100 80"
-          width="30"
-          height="30"
-        >
-          <rect width="100" height="10"></rect>
-          <rect y="30" width="100" height="10"></rect>
-          <rect y="60" width="100" height="10"></rect>
-        </svg>
+      <button
+        className="fixed z-50 top-4 right-4 p-2 rounded-lg bg-white shadow-md text-skin-button-accent hover:text-skin-button-accent-hover transition-colors duration-200"
+        onClick={() => setShowSidebar(!showSidebar)}
+      >
+        {showSidebar ? <FaTimes className="w-6 h-6" /> : <FaBars className="w-6 h-6" />}
+      </button>
+
+      {/* Overlay */}
+      {showSidebar && (
+        <div
+          className="fixed inset-0 bg-black bg-opacity-50 z-40 transition-opacity duration-300"
+          onClick={() => setShowSidebar(false)}
+        />
       )}
 
-      <div
-        className={`top-0 right-0 w-[20vw] backdrop-blur-lg  p-10 pl-20 text-black fixed h-full z-40  ease-in-out duration-300 ${
-          showSidebar ? "translate-x-0 " : "translate-x-full"
+      <aside
+        className={`fixed top-0 right-0 w-64 h-full bg-white shadow-lg z-50 transform transition-transform duration-300 ease-in-out ${
+          showSidebar ? "translate-x-0" : "translate-x-full"
         }`}
       >
-        <h3 className="mt-12 text-2xl gap-y-2  font-semibold text-black  flex flex-col items-start">
-          <Link
-            to="/user/dashboard"
-            className="hover:scale-125 ease-in-out duration-300"
-          >
-            Dashboard
-          </Link>
-          <Link
-            to="/user/profile"
-            className="hover:scale-125 ease-in-out duration-300"
-          >
-            Profile
-          </Link>
-          <Link
-            to="/user/edit"
-            className="hover:scale-125 ease-in-out duration-300"
-          >
-            Edit Profile
-          </Link>
-          <Link
-            to="/user/recent"
-            className="hover:scale-125 ease-in-out duration-300"
-          >
-            Recent Rides
-          </Link>
-          <button
-            onClick={logout}
-            className="hover:scale-125 ease-in-out duration-300"
-          >
-            Logout
-          </button>
-        </h3>
-      </div>
+        <div className="flex flex-col h-full">
+          <div className="p-5 border-b">
+            <h2 className="text-xl font-bold text-skin-text-heading-1">
+              User Menu
+            </h2>
+          </div>
+
+          <nav className="flex-1 overflow-y-auto py-4">
+            <ul className="space-y-2 px-3">
+              {menuItems.map((item) => (
+                <li key={item.path}>
+                  <Link
+                    to={item.path}
+                    className={`flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors duration-200 ${
+                      location.pathname === item.path
+                        ? "bg-skin-button-accent text-white"
+                        : "text-skin-text-base hover:bg-skin-fill hover:text-skin-button-accent"
+                    }`}
+                    onClick={() => setShowSidebar(false)}
+                  >
+                    {item.icon}
+                    <span>{item.name}</span>
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </nav>
+
+          <div className="p-4 border-t">
+            <button
+              onClick={() => {
+                logout();
+                setShowSidebar(false);
+              }}
+              className="flex items-center space-x-3 w-full px-4 py-3 text-red-600 hover:bg-red-50 rounded-lg transition-colors duration-200"
+            >
+              <FaSignOutAlt className="w-5 h-5" />
+              <span>Logout</span>
+            </button>
+          </div>
+        </div>
+      </aside>
     </>
   );
 };

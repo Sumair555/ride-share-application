@@ -1,135 +1,108 @@
 import axios from "axios";
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useFormik } from "formik";
 import { LoginSchema } from "./Schemas";
 
 function Login_sample_Driver() {
-  //   const dispatch = useDispatch();
   const navigate = useNavigate();
   const [error_, setError] = useState();
 
-  const onSubmit = async (values, actions) => {
-    console.log(values, actions);
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-    actions.resetForm();
-    login(values);
-  };
-  const {
-    values,
-    errors,
-    touched,
-    isSubmitting,
-    handleChange,
-    handleBlur,
-    handleSubmit,
-  } = useFormik({
+  const formik = useFormik({
     initialValues: {
       email: "",
       password: "",
     },
     validationSchema: LoginSchema,
-    onSubmit,
+    onSubmit: async (values, actions) => {
+      try {
+        const response = await axios.post("http://localhost:3000/driver/login", {
+          email: values.email,
+          password: values.password,
+        });
+
+        const accesstoken = response.data.accesstoken;
+        localStorage.setItem("accessToken", accesstoken);
+        localStorage.setItem("driver_id", response.data.id);
+        
+        navigate("/driver/dashboard");
+      } catch (error) {
+        setError(error);
+        console.error("Login failed:", error);
+      } finally {
+        actions.resetForm();
+      }
+    },
   });
 
-  //   console.log(errors);
-  const login = async (values) => {
-    try {
-      const response = await axios.post("http://localhost:3000/driver/login", {
-        email: values.email,
-        password: values.password,
-      });
-
-      const accesstoken = response.data.accesstoken;
-
-      // Store the access token in local storage
-      localStorage.setItem("accessToken", accesstoken);
-      localStorage.setItem("driver_id",response.data.id);
-      console.log(accesstoken);
-      // Redirect user to profile page
-      navigate("/driver/dashboard");
-    } catch (error) {
-      setError(error);
-      console.error("Login failed:", error);
-    }
-  };
-
-  //   useEffect(() => {
-  //     const hasReloaded = localStorage.getItem("login");
-  //     localStorage.removeItem("profile");
-  //     if (!hasReloaded) {
-  //       // Reload the page only once
-  //       localStorage.setItem("login", "true");
-  //       window.location.reload();
-  //     }
-  //   }, []);
-
-  //   console.log(formik);
-
   return (
-    <>
-      <div className="text-skin-base-2">
-        <h1 className="text-black text-3xl font-bold text-center tracking-wide">
-          Login
-        </h1>
-        <form onSubmit={handleSubmit} className="flex flex-col ">
+    <div className="signup-form-container">
+      <form onSubmit={formik.handleSubmit} className="space-y-4">
+        <div className="signup-input-wrapper">
           <input
             type="email"
             id="email"
-            value={values.email}
-            onChange={handleChange}
-            onBlur={handleBlur}
-            className={`w-[293px] placeholder:text-[#fff18a] bg-skin-fill my-3 h-10 rounded-lg border-[1px] p-2 text-center outline-none  ${
-              errors.email && touched.email
-                ? "border-red-800"
-                : touched.email
-                ? "border-green-500"
-                : "border-black"
+            name="email"
+            value={formik.values.email}
+            onChange={formik.handleChange}
+            onBlur={formik.handleBlur}
+            className={`signup-input ${
+              formik.touched.email && formik.errors.email
+                ? "border-red-500 focus:ring-red-500"
+                : "border-sky-200 focus:ring-sky-400"
             }`}
-            placeholder="email"
+            placeholder="Email Address"
           />
-          {errors.email && touched.email && (
-            <p className="text-red-600 ">{errors.email}</p>
+          {formik.touched.email && formik.errors.email && (
+            <p className="form-error">{formik.errors.email}</p>
           )}
+        </div>
 
+        <div className="signup-input-wrapper">
           <input
             type="password"
             id="password"
-            value={values.password}
-            onChange={handleChange}
-            onBlur={handleBlur}
-            className={`w-[293px] placeholder:text-[#fff18a] bg-skin-fill my-3 h-10 rounded-lg border-[1px] p-2 text-center outline-none  ${
-              errors.password && touched.password
-                ? "border-red-800"
-                : touched.password
-                ? "border-green-500"
-                : "border-black"
+            name="password"
+            value={formik.values.password}
+            onChange={formik.handleChange}
+            onBlur={formik.handleBlur}
+            className={`signup-input ${
+              formik.touched.password && formik.errors.password
+                ? "border-red-500 focus:ring-red-500"
+                : "border-sky-200 focus:ring-sky-400"
             }`}
-            placeholder="password"
+            placeholder="Password"
           />
-          {errors.password && touched.password ? (
-            <p className="text-red-600  mb-2">{errors.password}</p>
-          ) : (
-            <p className="text-red-600  mb-2"></p>
+          {formik.touched.password && formik.errors.password && (
+            <p className="form-error">{formik.errors.password}</p>
           )}
-          {error_ && (
-            <p className="text-red-500  mb-2">
-              Enter the correct Email and Password
-            </p>
-          )}
+        </div>
 
-          <button
-            type="submit"
-            disabled={isSubmitting}
-            className={`m-auto w-2/3 inline-block  py-2 mt-2 bg-[#eab308] rounded-lg hover:bg-skin-button-accent-hover *:${
-              isSubmitting && "opacity-[0.35]"
-            }`}
-          >
-            Proceed
-          </button>
-        </form>
-      </div>
-    </>
+        {error_ && (
+          <p className="form-error text-center">
+            Invalid email or password. Please try again.
+          </p>
+        )}
+
+        <button
+          type="submit"
+          disabled={formik.isSubmitting}
+          className={`signup-button ${formik.isSubmitting ? "opacity-50" : ""}`}
+        >
+          Sign In
+        </button>
+
+        <div className="flex items-center justify-between">
+          <label className="flex items-center">
+            <input type="checkbox" className="form-checkbox" />
+            <span className="ml-2 text-sm text-slate-600">Remember me</span>
+          </label>
+          <a href="#" className="text-sm text-sky-600 hover:underline">
+            Forgot password?
+          </a>
+        </div>
+      </form>
+    </div>
   );
 }
 

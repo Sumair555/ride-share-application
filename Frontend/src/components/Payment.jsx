@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from "react";
-import Sidebar from "./Sidebar";
-import img1 from "../../public/img1.jpeg";
-import { Navigate, useLocation, useNavigate } from "react-router";
-import { Link } from "react-router-dom";
+import Sidebar_User from "./Sidebar_User";
+import { useLocation, useNavigate } from "react-router";
 import axios from "axios";
+import { FiMapPin, FiCalendar, FiUsers } from "react-icons/fi";
+import { BiRupee } from "react-icons/bi";
 
 function Payment() {
   const [from, setFrom] = useState("");
@@ -12,137 +12,161 @@ function Payment() {
   const [seats, setSeats] = useState(0);
   const [cost, setCost] = useState(0);
   const [select, setSelect] = useState(0);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
 
   const navigate = useNavigate();
   const state = useLocation().state;
+
   useEffect(() => {
-    console.log(localStorage.getItem("id"), state);
+    if (!state) {
+      navigate("/user/dashboard");
+      return;
+    }
     setFrom(state.from);
     setTo(state.to);
     setDate(state.date);
     setSeats(state.seats);
     setCost(state.cost);
-  }, []);
+  }, [state, navigate]);
 
-  const handle = async (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    const res = await axios.post(
-      "http://localhost:3000/ride/add",
-      {
-        ride_id: state.ride_id,
-        user_id: localStorage.getItem("id"),
-        seats: select,
-      },
-      {
-        headers: {
-          Authorization: `bearer ${localStorage.getItem("accessToken")}`,
+    try {
+      setLoading(true);
+      setError(null);
+
+      const res = await axios.post(
+        "http://localhost:3000/ride/add",
+        {
+          ride_id: state.ride_id,
+          user_id: localStorage.getItem("id"),
+          seats: select,
         },
+        {
+          headers: {
+            Authorization: `bearer ${localStorage.getItem("accessToken")}`,
+          },
+        }
+      );
+
+      if (res.status === 200) {
+        navigate("/user/recent");
       }
-    );
-    console.log(res);
-    navigate("/user/recent");
+    } catch (err) {
+      setError(err.response?.data?.message || "Failed to book ride. Please try again.");
+    } finally {
+      setLoading(false);
+    }
   };
+
+  if (!state) {
+    return null;
+  }
+
   return (
-    <div
-      style={{ backgroundImage: `url(${img1})` }}
-      className="min-h-screen bg-no-repeat bg-cover flex flex-col items-center p-10"
-    >
-      <Sidebar />
-      <h1 className="text-4xl font-bold">Payment</h1>
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-blue-100">
+      <Sidebar_User />
+      <div className="p-6 sm:p-10 max-w-3xl mx-auto">
+        <h1 className="text-4xl font-bold text-gray-800 mb-8 text-center">Confirm Booking</h1>
 
-      <div className=" mt-10 backdrop-blur-xl rounded-xl shadow-xl p-10 w-1/3">
-        <form name="max-w-sm mx-auto" onSubmit={handle}>
-          <div className="mb-5">
-            <label
-              htmlFor="date"
-              className="block mb-2 text-sm font-medium text-black"
-            >
-              date
-            </label>
-            <input
-              // type="date"
-              id="date"
-              className="shadow-sm bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500 dark:shadow-sm-light"
-              required
-              placeholder={date}
-              value={date}
-            />
-          </div>
-          <div className="mb-5">
-            <label
-              htmlFor="from"
-              className="block mb-2 text-sm font-medium text-black "
-            >
-              From
-            </label>
-            <input
-              type="string"
-              id="from"
-              className="shadow-sm bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500 dark:shadow-sm-light"
-              required
-              value={from}
-            />
+        <div className="bg-white/70 backdrop-blur-sm rounded-2xl shadow-lg p-8">
+          {/* Ride Details Summary */}
+          <div className="mb-8 space-y-6">
+            <div className="flex items-center gap-2 text-blue-600">
+              <FiCalendar className="w-5 h-5" />
+              <span className="font-medium text-gray-800">{date}</span>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+              <div className="flex items-center gap-2">
+                <FiMapPin className="w-5 h-5 text-blue-600" />
+                <div>
+                  <p className="text-sm text-gray-500">From</p>
+                  <p className="font-medium text-gray-800">{from}</p>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <FiMapPin className="w-5 h-5 text-blue-600" />
+                <div>
+                  <p className="text-sm text-gray-500">To</p>
+                  <p className="font-medium text-gray-800">{to}</p>
+                </div>
+              </div>
+            </div>
           </div>
 
-          <div className="mb-5">
-            <label
-              htmlFor="to"
-              className="block mb-2 text-sm font-medium text-black"
-            >
-              To
-            </label>
-            <input
-              type="string"
-              id="to"
-              className="shadow-sm bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500 dark:shadow-sm-light"
-              required
-              value={to}
-            />
-          </div>
-          <div className="mb-5">
-            <label
-              htmlFor="seats"
-              className="block mb-2 text-sm font-medium text-black "
-            >
-              No . of Seats
-            </label>
-            <input
-              type="number"
-              id="seats"
-              className="shadow-sm bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500 dark:shadow-sm-light"
-              required
-              value={select}
-              onChange={(e) => {
-                if (e.target.value >= 0 && e.target.value <= seats) {
-                  setSelect(e.target.value);
-                }
-              }}
-            />
-          </div>
-          <div className="mb-5">
-            <label
-              htmlFor="seats"
-              className="block mb-2 text-xl font-medium text-black "
-            >
-              Price - {cost * select}
-            </label>
-          </div>
+          {/* Booking Form */}
+          <form onSubmit={handleSubmit} className="space-y-6">
+            <div>
+              <label htmlFor="seats" className="block text-sm font-medium text-gray-700 mb-2">
+                Number of Seats
+              </label>
+              <div className="relative">
+                <FiUsers className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                <input
+                  type="number"
+                  id="seats"
+                  min="1"
+                  max={seats}
+                  value={select}
+                  onChange={(e) => {
+                    const value = parseInt(e.target.value);
+                    if (value >= 0 && value <= seats) {
+                      setSelect(value);
+                    }
+                  }}
+                  className="pl-10 w-full rounded-lg border-gray-300 focus:border-blue-500 focus:ring-blue-500"
+                  required
+                />
+              </div>
+              <p className="mt-1 text-sm text-gray-500">Available seats: {seats}</p>
+            </div>
 
-          <div className="flex gap-x-2">
-            <button
-              type="submit"
-              className="text-white bg-green-400 hover:bg-green-500 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-green-400 dark:hover:bg-green-600 dark:focus:ring-blue-800 w-full"
-            >
-              Proceed
-            </button>
-            <button
-              onClick={() => navigate("/user/dashboard")}
-              className="text-white bg-red-400 hover:bg-red-500 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-red-400 dark:hover:bg-red-500 dark:focus:ring-blue-800 w-full"
-            >
-              Cancel
-            </button>
-          </div>
-        </form>
+            {/* Price Summary */}
+            <div className="bg-gray-50 rounded-lg p-4">
+              <div className="flex justify-between items-center">
+                <span className="text-gray-600">Price per seat</span>
+                <div className="flex items-center gap-1 text-gray-800">
+                  <BiRupee className="w-5 h-5" />
+                  <span>{cost}</span>
+                </div>
+              </div>
+              <div className="flex justify-between items-center mt-2 text-lg font-semibold">
+                <span className="text-gray-800">Total Amount</span>
+                <div className="flex items-center gap-1 text-blue-600">
+                  <BiRupee className="w-6 h-6" />
+                  <span>{cost * select}</span>
+                </div>
+              </div>
+            </div>
+
+            {error && (
+              <div className="bg-red-50 text-red-600 p-4 rounded-lg">
+                {error}
+              </div>
+            )}
+
+            <div className="flex gap-4">
+              <button
+                type="submit"
+                disabled={loading || select === 0}
+                className="flex-1 bg-blue-600 text-white py-3 px-6 rounded-lg font-medium hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              >
+                {loading ? "Processing..." : "Confirm Booking"}
+              </button>
+              <button
+                type="button"
+                onClick={() => navigate("/user/dashboard")}
+                disabled={loading}
+                className="flex-1 bg-gray-100 text-gray-800 py-3 px-6 rounded-lg font-medium hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              >
+                Cancel
+              </button>
+            </div>
+          </form>
+        </div>
       </div>
     </div>
   );

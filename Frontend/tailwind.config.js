@@ -9,6 +9,8 @@ export default {
           main: "var(--color-text-main)",
           "heading-1": "var(--color-text-heading-1)",
           "base-2": "var(--color-text-base-2)",
+          "button-accent": "var(--color-button-accent)",
+          "button-accent-hover": "var(--color-button-accent-hover)"
         },
       },
       backgroundColor: {
@@ -25,23 +27,19 @@ export default {
           "button-1": "var(--color-button-signup-2)",
         },
       },
+      borderColor: {
+        skin: {
+          "button-accent": "var(--color-button-accent)",
+          "button-accent-hover": "var(--color-button-accent-hover)",
+        },
+      },
       animation: {
         fade: "fadeIn .5s ease-in-out",
       },
-
       keyframes: {
         fadeIn: {
           from: { opacity: 0 },
           to: { opacity: 1 },
-        },
-        transitionDelay: {
-          0: "0s",
-          200: "0.2s",
-          400: "0.4s",
-          600: "0.6s",
-          800: "0.8s",
-          1000: "1s",
-          // Add more delays as needed
         },
       },
     },

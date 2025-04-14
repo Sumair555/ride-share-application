@@ -1,33 +1,43 @@
 import React, { useEffect, useState } from "react";
-import img1 from "../../public/img1.jpeg";
 import Sidebar_User from "./Sidebar_User";
 import axios from "axios";
+import { FiMapPin, FiCalendar, FiClock } from "react-icons/fi";
+import { BiRupee } from "react-icons/bi";
+
 function UserRides() {
-  const [data, setData] = useState();
+  const [data, setData] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     const getData = async () => {
-      const res = await axios.post(
-        "http://localhost:3000/user/recent",
-        {
-          id: localStorage.getItem("id"),
-        },
-        {
-          headers: {
-            Authorization: `bearer ${localStorage.getItem("accessToken")}`,
+      try {
+        setLoading(true);
+        const res = await axios.post(
+          "http://localhost:3000/user/recent",
+          {
+            id: localStorage.getItem("id"),
           },
-        }
-      );
-      // const data =await res.json();
-      console.log(res.data);
-      setData(res.data.rides);
+          {
+            headers: {
+              Authorization: `bearer ${localStorage.getItem("accessToken")}`,
+            },
+          }
+        );
+        setData(res.data.rides || []);
+        setError(null);
+      } catch (err) {
+        setError("Failed to fetch recent rides. Please try again later.");
+        console.error("Error fetching rides:", err);
+      } finally {
+        setLoading(false);
+      }
     };
     getData();
   }, []);
 
   const formatDate = (dateString) => {
     const date = new Date(dateString);
-    // Format the date as dd/mm/yyyy
     const day = date.getDate().toString().padStart(2, "0");
     const month = (date.getMonth() + 1).toString().padStart(2, "0");
     const year = date.getFullYear();
@@ -35,59 +45,95 @@ function UserRides() {
   };
 
   return (
-    <div
-      style={{ backgroundImage: `url(${img1})` }}
-      className="min-h-screen bg-no-repeat bg-cover flex flex-col items-center p-10"
-    >
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-blue-100">
       <Sidebar_User />
-      <h1 className="text-4xl font-bold">Recent Rides</h1>
-
-      {/* <ul className="text-black mt-10  p-5 w-3/4 backdrop-blur-xl mb-10 overflow-y-scroll  h-[500px] rounded-lg shadow-lg">
-        <li className="p-2 border-black  w-full flex items-center justify-around font-bold text-xl m-2 shadow-2xl">
-          <div className="flex gap-x-6 items-start">
-            <p>1.</p>
-            <div>
-              <p>11/11/11</p>
-              <div className="flex gap-x-4">
-                <p>from : guntur </p>
-                <p>to : vijayawada</p>
-              </div>
-              <p>seats : 5 </p>
+      <div className="p-6 sm:p-10 max-w-7xl mx-auto">
+        <h1 className="text-4xl font-bold text-gray-800 mb-6">Recent Rides</h1>
+        
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
+          <div className="bg-white/70 backdrop-blur-sm px-6 py-4 rounded-lg shadow-sm">
+            <p className="text-sm text-gray-500 mb-1">Recent Rides</p>
+            <p className="text-2xl font-bold text-blue-600">{data.length}</p>
+          </div>
+          
+          <div className="bg-white/70 backdrop-blur-sm px-6 py-4 rounded-lg shadow-sm">
+            <p className="text-sm text-gray-500 mb-1">Last 30 Days</p>
+            <p className="text-2xl font-bold text-blue-600">
+              {data.filter(ride => {
+                const rideDate = new Date(ride.date);
+                const thirtyDaysAgo = new Date();
+                thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+                return rideDate >= thirtyDaysAgo;
+              }).length}
+            </p>
+          </div>
+          
+          <div className="bg-white/70 backdrop-blur-sm px-6 py-4 rounded-lg shadow-sm">
+            <p className="text-sm text-gray-500 mb-1">Total Spent</p>
+            <div className="flex items-center">
+              <BiRupee className="w-6 h-6 text-blue-600" />
+              <p className="text-2xl font-bold text-blue-600">
+                {data.reduce((total, ride) => total + (Number(ride.cost) || 0), 0)}
+              </p>
             </div>
           </div>
-          <div className="flex gap-x-2">
-            <p>price</p>
-          </div>
-        </li>
-      </ul> */}
+        </div>
 
-      {data && (
-        <ul className="text-black mt-10 p-5 w-3/4 backdrop-blur-xl mb-10 overflow-y-scroll h-[500px] rounded-lg shadow-lg">
-          {data.map((ride, index) => (
-            <li
-              key={ride.id || index}
-              className="p-2 border-black w-full flex items-center justify-around font-bold text-xl m-2 shadow-2xl"
-            >
-              <div className="flex gap-x-6 items-start">
-                <p>{index + 1}.</p>
-                <div>
-                  <p>{formatDate(ride.date)}</p>{" "}
-                  {/* Use formatDate function here */}
-                  <div className="flex gap-x-4">
-                    <p>From: {ride.from}</p>
-                    <p>To: {ride.to}</p>
+        {loading ? (
+          <div className="flex items-center justify-center h-64">
+            <div className="animate-spin rounded-full h-12 w-12 border-4 border-blue-500 border-t-transparent"></div>
+          </div>
+        ) : error ? (
+          <div className="bg-red-50 text-red-600 p-4 rounded-lg shadow-sm">
+            {error}
+          </div>
+        ) : data.length === 0 ? (
+          <div className="text-center py-12 bg-white/50 backdrop-blur-md rounded-lg shadow-sm">
+            <p className="text-lg text-gray-600">No recent rides found</p>
+          </div>
+        ) : (
+          <div className="space-y-4">
+            {data.map((ride, index) => (
+              <div
+                key={ride.id || index}
+                className="bg-white/50 backdrop-blur-md rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 p-6"
+              >
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                  <div className="space-y-3">
+                    <div className="flex items-center gap-2 text-blue-600">
+                      <FiCalendar className="w-5 h-5" />
+                      <span className="font-medium">{formatDate(ride.date)}</span>
+                    </div>
+                    
+                    <div className="flex flex-col sm:flex-row gap-4">
+                      <div className="flex items-center gap-2">
+                        <FiMapPin className="w-5 h-5 text-blue-600" />
+                        <div>
+                          <p className="text-sm text-gray-500">From</p>
+                          <p className="font-medium text-gray-800">{ride.from}</p>
+                        </div>
+                      </div>
+                      
+                      <div className="flex items-center gap-2">
+                        <FiMapPin className="w-5 h-5 text-blue-600" />
+                        <div>
+                          <p className="text-sm text-gray-500">To</p>
+                          <p className="font-medium text-gray-800">{ride.to}</p>
+                        </div>
+                      </div>
+                    </div>
                   </div>
 
+                  <div className="flex items-center gap-2 text-blue-600">
+                    <BiRupee className="w-5 h-5" />
+                    <span className="font-bold text-xl">{ride.cost}</span>
+                  </div>
                 </div>
               </div>
-              <div className="flex gap-x-2">
-                <p>{`Price: ${ride.cost}`}</p>
-              </div>
-              
-            </li>
-          ))}
-        </ul>
-      )}
+            ))}
+          </div>
+        )}
+      </div>
     </div>
   );
 }

@@ -1,143 +1,222 @@
 import React, { useEffect, useState } from "react";
-
-import img1 from "../../public/img1.jpeg";
 import Sidebar_User from "./Sidebar_User";
 import axios from "axios";
+import { useNavigate } from "react-router-dom";
+
 function UserEditProfile() {
+  const navigate = useNavigate();
   const [name, setName] = useState("");
   const [password, setPassword] = useState("");
   const [phone, setPhone] = useState("");
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [updateSuccess, setUpdateSuccess] = useState(false);
 
   useEffect(() => {
-    const temp = async () => {
-      const res = await axios.post(
-        "http://localhost:3000/user/details",
-        {
-          id: localStorage.getItem("id"),
-        },
-        {
-          headers: {
-            Authorization: `bearer ${localStorage.getItem("accessToken")}`,
-          },
+    const fetchUserDetails = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        
+        const token = localStorage.getItem("accessToken");
+        const id = localStorage.getItem("id");
+        
+        if (!token || !id) {
+          setError("Please login to edit your profile");
+          return;
         }
-      );
-      // console.log(res.data);
-      setName(res.data.name);
-      setPhone(res.data.phone);
+
+        console.log("Fetching user details with:", { id, token });
+        
+        const res = await axios.post(
+          "http://localhost:3000/user/details",
+          {
+            id: id,
+          },
+          {
+            headers: {
+              Authorization: `bearer ${token}`,
+            },
+          }
+        );
+
+        console.log("User details response:", res.data);
+
+        if (!res.data) {
+          setError("Failed to load user details");
+          return;
+        }
+
+        setName(res.data.name || "");
+        setPhone(res.data.phone || "");
+      } catch (err) {
+        console.error("Error fetching user details:", {
+          message: err.message,
+          response: err.response?.data,
+          status: err.response?.status
+        });
+        
+        if (err.response?.status === 401) {
+          setError("Session expired. Please login again.");
+        } else if (err.response?.data?.message) {
+          setError(err.response.data.message);
+        } else {
+          setError("Failed to load profile details. Please try again.");
+        }
+      } finally {
+        setLoading(false);
+      }
     };
-    temp();
+    
+    fetchUserDetails();
   }, []);
 
-  const temp = async (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-
-    // Data to be updated
-    const requestData = {
-      id: localStorage.getItem("id"),
-      name,
-      password,
-      phone,
-    };
-
     try {
-      // Make the POST request
+      setError(null);
+      setUpdateSuccess(false);
+      
+      const token = localStorage.getItem("accessToken");
+      const id = localStorage.getItem("id");
+      
+      if (!token || !id) {
+        setError("Please login to update your profile");
+        return;
+      }
+
+      const updateData = {
+        userId: id,
+        name: name,
+        phone: phone,
+      };
+
+      if (password) {
+        updateData.password = password;
+      }
+
+      console.log("Updating user with data:", updateData);
+
       const res = await axios.post(
         "http://localhost:3000/user/update",
-        {
-          userId: localStorage.getItem("id"),
-          name,
-          password,
-          phone,
-        },
+        updateData,
         {
           headers: {
-            Authorization: `bearer ${localStorage.getItem("accessToken")}`,
+            Authorization: `bearer ${token}`,
           },
         }
       );
 
-      // Handle the response
+      console.log("Update response:", res.data);
+
       if (res.status === 200) {
-        console.log("User updated successfully:", res.data);
-        // Notify the user or update the UI as needed
-      } else {
-        console.log("Failed to update user:", res.status, res.data);
-        // Handle non-200 status codes
+        setUpdateSuccess(true);
+        setPassword(""); // Clear password after successful update
+        setTimeout(() => {
+          navigate("/user/profile");
+        }, 2000);
       }
-    } catch (error) {
-      console.error("Error updating user:", error);
-      // Handle network errors or other issues
-      // Notify the user about the error (optional)
+    } catch (err) {
+      console.error("Error updating profile:", {
+        message: err.message,
+        response: err.response?.data,
+        status: err.response?.status
+      });
+      
+      if (err.response?.status === 401) {
+        setError("Session expired. Please login again.");
+      } else if (err.response?.data?.message) {
+        setError(err.response.data.message);
+      } else {
+        setError("Failed to update profile. Please try again.");
+      }
     }
   };
 
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-sky-50 to-sky-100">
+        <Sidebar_User />
+        <div className="flex justify-center items-center h-screen">
+          <div className="text-center text-slate-600">Loading profile...</div>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div
-      style={{ backgroundImage: `url(${img1})` }}
-      className="min-h-screen bg-no-repeat bg-cover flex flex-col items-center p-10"
-    >
+    <div className="min-h-screen bg-gradient-to-br from-sky-50 to-sky-100">
       <Sidebar_User />
-      <h1 className="text-4xl font-bold">Edit Profile</h1>
+      <div className="container mx-auto px-4 py-8">
+        <h1 className="text-4xl font-bold text-center text-slate-800 mb-8">Edit Profile</h1>
 
-      <div className=" mt-10 backdrop-blur-xl rounded-xl shadow-xl p-10 w-1/3">
-        <form name="max-w-sm mx-auto" onSubmit={temp}>
-          <div className="mb-5">
-            <label
-              htmlFor="Name"
-              className="block mb-2 text-sm font-medium text-black"
-            >
-              Name
-            </label>
-            <input
-              type="string"
-              id="name"
-              className="shadow-sm bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500 dark:shadow-sm-light"
-              required
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-            />
-          </div>
-          <div className="mb-5">
-            <label
-              htmlFor="password"
-              className="block mb-2 text-sm font-medium text-black "
-            >
-              Password
-            </label>
-            <input
-              type="password"
-              id="password"
-              className="shadow-sm bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500 dark:shadow-sm-light"
-              required
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-            />
-          </div>
+        <div className="max-w-md mx-auto bg-white rounded-xl shadow-lg p-8">
+          {error && (
+            <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
+              <p className="text-red-600">{error}</p>
+            </div>
+          )}
 
-          <div className="mb-5">
-            <label
-              htmlFor="phone"
-              className="block mb-2 text-sm font-medium text-black "
-            >
-              Phone number
-            </label>
-            <input
-              type="string"
-              id="phone"
-              className="shadow-sm bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500 dark:shadow-sm-light"
-              required
-              value={phone}
-              onChange={(e) => setPhone(e.target.value)}
-            />
-          </div>
+          {updateSuccess && (
+            <div className="mb-6 p-4 bg-green-50 border border-green-200 rounded-lg">
+              <p className="text-green-600">Profile updated successfully! Redirecting...</p>
+            </div>
+          )}
 
-          <button
-            type="submit"
-            className="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800 w-full"
-          >
-            Save
-          </button>
-        </form>
+          <form onSubmit={handleSubmit} className="space-y-6">
+            <div>
+              <label htmlFor="name" className="block text-sm font-medium text-slate-700 mb-1">
+                Name
+              </label>
+              <input
+                type="text"
+                id="name"
+                className="input-primary w-full"
+                required
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                placeholder="Enter your name"
+              />
+            </div>
+
+            <div>
+              <label htmlFor="password" className="block text-sm font-medium text-slate-700 mb-1">
+                New Password (optional)
+              </label>
+              <input
+                type="password"
+                id="password"
+                className="input-primary w-full"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="Enter new password"
+                minLength={6}
+              />
+            </div>
+
+            <div>
+              <label htmlFor="phone" className="block text-sm font-medium text-slate-700 mb-1">
+                Phone Number
+              </label>
+              <input
+                type="tel"
+                id="phone"
+                className="input-primary w-full"
+                required
+                value={phone}
+                onChange={(e) => setPhone(e.target.value)}
+                placeholder="Enter your phone number"
+              />
+            </div>
+
+            <button
+              type="submit"
+              className="button-primary w-full"
+            >
+              Save Changes
+            </button>
+          </form>
+        </div>
       </div>
     </div>
   );

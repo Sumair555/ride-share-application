@@ -6,6 +6,7 @@ import { SignupSchema } from "./Schemas";
 
 function SignupSampleUser() {
   const navigate = useNavigate();
+  const [error, setError] = React.useState(null);
 
   // Formik setup
   const formik = useFormik({
@@ -18,27 +19,45 @@ function SignupSampleUser() {
     validationSchema: SignupSchema,
     onSubmit: async (values, actions) => {
       try {
-        // Make API request
+        console.log("Attempting signup with:", { email: values.email, name: values.name });
+        
         const response = await axios.post(
           "http://localhost:3000/user/signup",
           values
         );
 
-        // Handle success
-        const accesstoken = response.data.accesstoken;
-        const id = response.data.id;
-        console.log(accesstoken, id);
-        localStorage.setItem("accessToken", accesstoken);
-        localStorage.setItem("id", id);
+        console.log("Signup response:", response.data);
 
-        // Navigate to user dashboard
+        if (!response.data || !response.data.accesstoken) {
+          console.error("Invalid response format:", response.data);
+          setError("Signup failed. Please try again.");
+          return;
+        }
+
+        // Store token and ID
+        localStorage.setItem("accessToken", response.data.accesstoken);
+        localStorage.setItem("id", response.data.id);
+
+        // Clear any existing error
+        setError(null);
+
+        // Navigate to dashboard
         navigate("/user/dashboard");
-      } catch (error) {
-        // Handle error
-        console.error("Signup failed:", error);
-        alert("Signup failed. Please try again.");
+      } catch (err) {
+        console.error("Signup error:", {
+          message: err.message,
+          response: err.response?.data,
+          status: err.response?.status
+        });
+        
+        if (err.response?.status === 409) {
+          setError("Email already exists. Please use a different email.");
+        } else if (err.response?.data?.message) {
+          setError(err.response.data.message);
+        } else {
+          setError("Signup failed. Please try again.");
+        }
       } finally {
-        // Reset form after submission attempt
         actions.resetForm();
       }
     },
@@ -46,12 +65,12 @@ function SignupSampleUser() {
 
   // Rendering form
   return (
-    <div className="text-skin-base-2">
-      <h1 className=" text-3xl pb-2 font-bold text-center tracking-wide text-black ">
+    <div className="signup-form-container">
+      <h1 className="text-3xl pb-2 font-bold text-center tracking-wide text-black">
         Sign Up
       </h1>
-      <form onSubmit={formik.handleSubmit} className="flex flex-col">
-        <div className="m-1">
+      <form onSubmit={formik.handleSubmit} className="space-y-4">
+        <div className="signup-input-wrapper">
           <input
             type="text"
             id="name"
@@ -59,18 +78,19 @@ function SignupSampleUser() {
             value={formik.values.name}
             onChange={formik.handleChange}
             onBlur={formik.handleBlur}
-            className={`w-full placeholder:text-[#fff18a] bg-skin-fill h-10 rounded-lg border-[1px] p-2 text-center outline-none ${
+            className={`signup-input ${
               formik.touched.name && formik.errors.name
-                ? "border-red-800"
-                : "border-black"
+                ? "border-red-500 focus:ring-red-500"
+                : "border-sky-200 focus:ring-sky-400"
             }`}
-            placeholder="Name"
+            placeholder="Full Name"
           />
           {formik.touched.name && formik.errors.name && (
-            <p className="text-red-600">{formik.errors.name}</p>
+            <p className="form-error">{formik.errors.name}</p>
           )}
         </div>
-        <div className="m-1">
+
+        <div className="signup-input-wrapper">
           <input
             type="email"
             id="email"
@@ -78,18 +98,19 @@ function SignupSampleUser() {
             value={formik.values.email}
             onChange={formik.handleChange}
             onBlur={formik.handleBlur}
-            className={`w-[293px] placeholder:text-[#fff18a] bg-skin-fill h-10 rounded-lg border-[1px] p-2 text-center outline-none ${
+            className={`signup-input ${
               formik.touched.email && formik.errors.email
-                ? "border-red-800"
-                : "border-black"
+                ? "border-red-500 focus:ring-red-500"
+                : "border-sky-200 focus:ring-sky-400"
             }`}
-            placeholder="Email"
+            placeholder="Email Address"
           />
           {formik.touched.email && formik.errors.email && (
-            <p className="text-red-600">{formik.errors.email}</p>
+            <p className="form-error">{formik.errors.email}</p>
           )}
         </div>
-        <div className="m-1">
+
+        <div className="signup-input-wrapper">
           <input
             type="password"
             id="password"
@@ -97,44 +118,50 @@ function SignupSampleUser() {
             value={formik.values.password}
             onChange={formik.handleChange}
             onBlur={formik.handleBlur}
-            className={`w-[293px] placeholder:text-[#fff18a] bg-skin-fill h-10 rounded-lg border-[1px] p-2 text-center outline-none ${
+            className={`signup-input ${
               formik.touched.password && formik.errors.password
-                ? "border-red-800"
-                : "border-black"
+                ? "border-red-500 focus:ring-red-500"
+                : "border-sky-200 focus:ring-sky-400"
             }`}
             placeholder="Password"
           />
           {formik.touched.password && formik.errors.password && (
-            <p className="text-red-600">{formik.errors.password}</p>
+            <p className="form-error">{formik.errors.password}</p>
           )}
         </div>
-        <div className="m-1">
+
+        <div className="signup-input-wrapper">
           <input
-            type="text"
+            type="tel"
             id="phone"
             name="phone"
             value={formik.values.phone}
             onChange={formik.handleChange}
             onBlur={formik.handleBlur}
-            className={`w-full placeholder:text-[#fff18a] bg-skin-fill h-10 rounded-lg border-[1px] p-2 text-center outline-none ${
+            className={`signup-input ${
               formik.touched.phone && formik.errors.phone
-                ? "border-red-800"
-                : "border-black"
+                ? "border-red-500 focus:ring-red-500"
+                : "border-sky-200 focus:ring-sky-400"
             }`}
-            placeholder="Phone"
+            placeholder="Phone Number"
           />
           {formik.touched.phone && formik.errors.phone && (
-            <p className="text-red-600">{formik.errors.phone}</p>
+            <p className="form-error">{formik.errors.phone}</p>
           )}
         </div>
+
+        {error && (
+          <div className="text-sm text-red-600 text-center animate-fade-in">
+            {error}
+          </div>
+        )}
+
         <button
           type="submit"
           disabled={formik.isSubmitting}
-          className={`w-2/3 m-auto inline-block px-5 py-2 bg-[#eab308] rounded-lg hover:bg-skin-button-accent-hover ${
-            formik.isSubmitting && "opacity-35"
-          }`}
+          className={`signup-button ${formik.isSubmitting ? "opacity-50" : ""}`}
         >
-          Proceed
+          {formik.isSubmitting ? "Creating Account..." : "Create Account"}
         </button>
       </form>
     </div>
