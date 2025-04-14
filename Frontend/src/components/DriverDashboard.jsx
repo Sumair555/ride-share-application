@@ -13,7 +13,7 @@ function DriverDashboard() {
   const [seats, setSeats] = useState("");
   const [price, setPrice] = useState("");
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
 
   const locations = {
@@ -161,24 +161,12 @@ function DriverDashboard() {
       }
 
       try {
-        console.log("Validating driver authentication...");
-        const validateResponse = await axios.get(
-          `http://localhost:3000/driver/${driverId}/validate`,
-          {
-            headers: {
-              Authorization: `Bearer ${accessToken}`
-            },
-          }
-        );
-
-        console.log("Driver validation successful:", validateResponse.data);
-
-        // Set loading state before fetching rides
+        // Fetch rides directly without separate validation
         setLoading(true);
         console.log("Fetching rides for driver:", driverId);
         
         const ridesResponse = await axios.get(
-          `http://localhost:3000/driver/${driverId}/rides`,
+          `http://localhost:3000/ride/driver/${driverId}`,
           {
             headers: {
               Authorization: `Bearer ${accessToken}`
@@ -189,7 +177,7 @@ function DriverDashboard() {
         console.log("Rides fetched successfully:", ridesResponse.data);
         
         if (Array.isArray(ridesResponse.data)) {
-          // Filter out past rides
+          // Filter out past rides and sort by date
           const now = new Date();
           const upcomingRides = ridesResponse.data.filter(ride => {
             const rideDate = new Date(ride.date);
@@ -197,13 +185,11 @@ function DriverDashboard() {
           }).sort((a, b) => new Date(a.date) - new Date(b.date));
           
           setRides(upcomingRides);
+          setError(""); // Clear any existing errors
         } else {
           console.error("Invalid rides data format:", ridesResponse.data);
           setError("Failed to load rides data");
         }
-        
-        setLoading(false);
-
       } catch (err) {
         console.error("Dashboard initialization error:", {
           error: err,
@@ -219,7 +205,8 @@ function DriverDashboard() {
           return;
         }
 
-        setError(err.response?.data?.message || "Failed to load dashboard data. Please try again.");
+        setError("Failed to load dashboard data. Please try again.");
+      } finally {
         setLoading(false);
       }
     };
@@ -237,11 +224,8 @@ function DriverDashboard() {
         throw new Error("Driver ID not found");
       }
 
-      const response = await axios.post(
-        "http://localhost:3000/driver/rides",
-        {
-          driver_id: driverId,
-        },
+      const response = await axios.get(
+        `http://localhost:3000/ride/driver/${driverId}`,
         {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("accessToken")}`
@@ -251,8 +235,8 @@ function DriverDashboard() {
 
       console.log("Rides fetch response:", response.data);
 
-      if (response.status === 200) {
-        // Filter out past rides
+      if (Array.isArray(response.data)) {
+        // Filter out past rides and sort by date
         const now = new Date();
         const upcomingRides = response.data.filter(ride => {
           const rideDate = new Date(ride.date);
@@ -261,6 +245,9 @@ function DriverDashboard() {
         
         console.log("Filtered upcoming rides:", upcomingRides);
         setRides(upcomingRides);
+        setError(""); // Clear any existing errors
+      } else {
+        throw new Error("Invalid response format");
       }
     } catch (err) {
       console.error("Error fetching rides:", {
