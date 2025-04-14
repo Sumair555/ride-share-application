@@ -127,7 +127,7 @@ const UpdateRide = async (req, res) => {
     const { ride_id, user_id, seats } = req.body;
 
     // Validate seats to be a positive integer
-    if (seats <= 0) {
+    if (!seats || seats <= 0) {
       return res
         .status(400)
         .json({ message: "Invalid number of seats requested" });
@@ -145,35 +145,66 @@ const UpdateRide = async (req, res) => {
       return res.status(404).json({ message: "User not found" });
     }
 
+    // Check if user has already booked this ride
+    if (ride.users.includes(user_id)) {
+      return res.status(400).json({ message: "You have already booked this ride" });
+    }
+
     // Check if there are enough seats available
     if (ride.seats < seats) {
       return res.status(400).json({ message: "Not enough seats available" });
     }
 
-    // Add the user ID to the ride's user list
-    ride.User.push(user_id);
+    // Add the user ID to the ride's users list with booked seats
+    ride.users.push(user_id);
+    ride.userSeats = ride.userSeats || {};
+    ride.userSeats[user_id] = seats;
 
     // Update the available seats in the ride
     ride.seats -= seats;
 
+    // If no seats left, mark ride as unavailable
+    if (ride.seats === 0) {
+      ride.available = false;
+    }
+
     // Save the ride
     await ride.save();
 
-    // Add the ride ID to the user's rides list
-    user.rides.push(ride_id);
+    // Add the ride ID to the user's rides list if not already present
+    if (!user.rides.includes(ride_id)) {
+      user.rides.push(ride_id);
+      await user.save();
+    }
 
-    // Save the user
-    await user.save();
+    // Get the populated ride details for response
+    const populatedRide = await Ride.findById(ride_id)
+      .populate('driver', 'name vehicle_type model phone vehicle_number email');
 
-    return res.status(200).json({ message: "Successfully saved the ride" });
+    return res.status(200).json({ 
+      message: "Booking confirmed successfully",
+      ride: {
+        _id: populatedRide._id,
+        from: populatedRide.from,
+        to: populatedRide.to,
+        date: populatedRide.date,
+        bookedSeats: seats,
+        cost: populatedRide.cost,
+        driver: {
+          name: populatedRide.driver.name,
+          vehicleType: populatedRide.driver.vehicle_type,
+          vehicleModel: populatedRide.driver.model,
+          phoneNumber: populatedRide.driver.phone,
+          email: populatedRide.driver.email,
+          vehicleNumber: populatedRide.driver.vehicle_number
+        }
+      }
+    });
   } catch (err) {
-    // Log the error for debugging purposes
-    console.error(err);
-
-    // Return a generic error message
-    return res
-      .status(500)
-      .json({ message: "An error occurred while updating the ride" });
+    console.error("Error updating ride:", err);
+    return res.status(500).json({ 
+      message: err.message || "An error occurred while booking the ride" 
+    });
   }
 };
 

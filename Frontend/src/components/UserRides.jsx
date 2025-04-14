@@ -1,138 +1,223 @@
 import React, { useEffect, useState } from "react";
 import Sidebar_User from "./Sidebar_User";
 import axios from "axios";
-import { FiMapPin, FiCalendar, FiClock } from "react-icons/fi";
+import { useNavigate } from "react-router-dom";
+import { FiMapPin, FiCalendar, FiUsers, FiTruck } from "react-icons/fi";
 import { BiRupee } from "react-icons/bi";
 
 function UserRides() {
-  const [data, setData] = useState([]);
+  const [rides, setRides] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [activeTab, setActiveTab] = useState("upcoming");
+  const navigate = useNavigate();
 
   useEffect(() => {
-    const getData = async () => {
+    const fetchRides = async () => {
       try {
         setLoading(true);
-        const res = await axios.post(
-          "http://localhost:3000/user/recent",
-          {
-            id: localStorage.getItem("id"),
-          },
-          {
-            headers: {
-              Authorization: `bearer ${localStorage.getItem("accessToken")}`,
-            },
-          }
-        );
-        setData(res.data.rides || []);
         setError(null);
+
+        const token = localStorage.getItem("accessToken");
+        const userId = localStorage.getItem("id");
+
+        if (!token || !userId) {
+          setError("Please login to continue");
+          navigate("/user/login");
+          return;
+        }
+
+        const response = await axios.get(`http://localhost:3000/ride/user/${userId}`, {
+          headers: {
+            Authorization: `bearer ${token}`
+          }
+        });
+
+        if (response.status === 200) {
+          // Sort rides by date
+          const sortedRides = response.data.sort((a, b) => new Date(a.date) - new Date(b.date));
+          setRides(sortedRides);
+        }
       } catch (err) {
-        setError("Failed to fetch recent rides. Please try again later.");
         console.error("Error fetching rides:", err);
+        setError(err.response?.data?.message || "Failed to load rides");
       } finally {
         setLoading(false);
       }
     };
-    getData();
-  }, []);
+
+    fetchRides();
+  }, [navigate]);
 
   const formatDate = (dateString) => {
-    const date = new Date(dateString);
-    const day = date.getDate().toString().padStart(2, "0");
-    const month = (date.getMonth() + 1).toString().padStart(2, "0");
-    const year = date.getFullYear();
-    return `${day}/${month}/${year}`;
+    return new Date(dateString).toLocaleString('en-US', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
   };
+
+  const formatLocation = (location) => {
+    if (typeof location === 'string') {
+      return location;
+    }
+    return location?.place || "Location not specified";
+  };
+
+  const filterRides = (type) => {
+    const now = new Date();
+    if (type === "upcoming") {
+      return rides.filter(ride => new Date(ride.date) >= now);
+    } else {
+      return rides.filter(ride => new Date(ride.date) < now);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-blue-100">
+        <Sidebar_User />
+        <div className="flex items-center justify-center h-screen">
+          <div className="animate-spin rounded-full h-12 w-12 border-4 border-blue-500 border-t-transparent"></div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-blue-100">
       <Sidebar_User />
-      <div className="p-6 sm:p-10 max-w-7xl mx-auto">
-        <h1 className="text-4xl font-bold text-gray-800 mb-6">Recent Rides</h1>
-        
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
-          <div className="bg-white/70 backdrop-blur-sm px-6 py-4 rounded-lg shadow-sm">
-            <p className="text-sm text-gray-500 mb-1">Recent Rides</p>
-            <p className="text-2xl font-bold text-blue-600">{data.length}</p>
+      <div className="p-6 sm:p-10">
+        <div className="max-w-4xl mx-auto">
+          <h2 className="text-2xl font-semibold text-gray-800 mb-6">My Bookings</h2>
+
+          {/* Tabs */}
+          <div className="flex gap-4 mb-6">
+            <button
+              onClick={() => setActiveTab("upcoming")}
+              className={`px-4 py-2 rounded-lg font-medium transition-colors duration-200 ${
+                activeTab === "upcoming"
+                  ? "bg-blue-600 text-white"
+                  : "bg-white text-gray-600 hover:bg-blue-50"
+              }`}
+            >
+              Upcoming Rides
+            </button>
+            <button
+              onClick={() => setActiveTab("past")}
+              className={`px-4 py-2 rounded-lg font-medium transition-colors duration-200 ${
+                activeTab === "past"
+                  ? "bg-blue-600 text-white"
+                  : "bg-white text-gray-600 hover:bg-blue-50"
+              }`}
+            >
+              Past Rides
+            </button>
           </div>
-          
-          <div className="bg-white/70 backdrop-blur-sm px-6 py-4 rounded-lg shadow-sm">
-            <p className="text-sm text-gray-500 mb-1">Last 30 Days</p>
-            <p className="text-2xl font-bold text-blue-600">
-              {data.filter(ride => {
-                const rideDate = new Date(ride.date);
-                const thirtyDaysAgo = new Date();
-                thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-                return rideDate >= thirtyDaysAgo;
-              }).length}
-            </p>
-          </div>
-          
-          <div className="bg-white/70 backdrop-blur-sm px-6 py-4 rounded-lg shadow-sm">
-            <p className="text-sm text-gray-500 mb-1">Total Spent</p>
-            <div className="flex items-center">
-              <BiRupee className="w-6 h-6 text-blue-600" />
-              <p className="text-2xl font-bold text-blue-600">
-                {data.reduce((total, ride) => total + (Number(ride.cost) || 0), 0)}
-              </p>
+
+          {error ? (
+            <div className="bg-red-50 text-red-600 p-4 rounded-lg">
+              {error}
             </div>
-          </div>
-        </div>
-
-        {loading ? (
-          <div className="flex items-center justify-center h-64">
-            <div className="animate-spin rounded-full h-12 w-12 border-4 border-blue-500 border-t-transparent"></div>
-          </div>
-        ) : error ? (
-          <div className="bg-red-50 text-red-600 p-4 rounded-lg shadow-sm">
-            {error}
-          </div>
-        ) : data.length === 0 ? (
-          <div className="text-center py-12 bg-white/50 backdrop-blur-md rounded-lg shadow-sm">
-            <p className="text-lg text-gray-600">No recent rides found</p>
-          </div>
-        ) : (
-          <div className="space-y-4">
-            {data.map((ride, index) => (
-              <div
-                key={ride.id || index}
-                className="bg-white/50 backdrop-blur-md rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 p-6"
-              >
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                  <div className="space-y-3">
-                    <div className="flex items-center gap-2 text-blue-600">
-                      <FiCalendar className="w-5 h-5" />
-                      <span className="font-medium">{formatDate(ride.date)}</span>
+          ) : (
+            <div className="space-y-4">
+              {filterRides(activeTab).map((ride) => (
+                <div
+                  key={ride._id}
+                  className="bg-white/70 backdrop-blur-sm rounded-lg shadow-md p-6"
+                >
+                  <div className="space-y-4">
+                    {/* Date */}
+                    <div className="flex items-center gap-3">
+                      <FiCalendar className="w-5 h-5 text-blue-600" />
+                      <span className="font-medium text-gray-800">
+                        {formatDate(ride.date)}
+                      </span>
                     </div>
-                    
-                    <div className="flex flex-col sm:flex-row gap-4">
-                      <div className="flex items-center gap-2">
+
+                    {/* Locations */}
+                    <div className="flex items-start gap-3">
+                      <div className="flex flex-col items-center gap-1">
                         <FiMapPin className="w-5 h-5 text-blue-600" />
-                        <div>
-                          <p className="text-sm text-gray-500">From</p>
-                          <p className="font-medium text-gray-800">{ride.from}</p>
-                        </div>
+                        <div className="w-0.5 h-8 bg-gray-200"></div>
+                        <FiMapPin className="w-5 h-5 text-blue-600" />
                       </div>
-                      
-                      <div className="flex items-center gap-2">
-                        <FiMapPin className="w-5 h-5 text-blue-600" />
-                        <div>
-                          <p className="text-sm text-gray-500">To</p>
-                          <p className="font-medium text-gray-800">{ride.to}</p>
+                      <div className="space-y-4">
+                        <div className="text-gray-800">
+                          <div className="font-medium">From</div>
+                          <div className="text-gray-600">{formatLocation(ride.from)}</div>
+                        </div>
+                        <div className="text-gray-800">
+                          <div className="font-medium">To</div>
+                          <div className="text-gray-600">{formatLocation(ride.to)}</div>
                         </div>
                       </div>
                     </div>
-                  </div>
 
-                  <div className="flex items-center gap-2 text-blue-600">
-                    <BiRupee className="w-5 h-5" />
-                    <span className="font-bold text-xl">{ride.cost}</span>
+                    {/* Vehicle and Driver Details */}
+                    {ride.driver && (
+                      <div className="space-y-3 border-t border-gray-100 pt-4">
+                        <div className="flex items-center gap-2 text-gray-700">
+                          <FiTruck className="w-5 h-5 text-blue-600" />
+                          <div className="flex flex-col gap-2 w-full">
+                            <div className="grid grid-cols-2 gap-4">
+                              <div className="text-gray-600">
+                                <span className="font-medium">Driver: </span>
+                                <span>{ride.driver.name}</span>
+                              </div>
+                              <div className="text-gray-600">
+                                <span className="font-medium">Contact: </span>
+                                <span>{ride.driver.phoneNumber}</span>
+                              </div>
+                              <div className="text-gray-600">
+                                <span className="font-medium">Email: </span>
+                                <span>{ride.driver.email}</span>
+                              </div>
+                            </div>
+                            <div className="grid grid-cols-3 gap-4">
+                              <div className="text-gray-600">
+                                <span className="font-medium">Vehicle: </span>
+                                <span>{ride.driver.vehicleType}</span>
+                              </div>
+                              <div className="text-gray-600">
+                                <span className="font-medium">Model: </span>
+                                <span>{ride.driver.vehicleModel}</span>
+                              </div>
+                              <div className="text-gray-600">
+                                <span className="font-medium">Number: </span>
+                                <span>{ride.driver.vehicleNumber}</span>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Price and Seats */}
+                    <div className="flex items-center justify-between text-gray-600 border-t border-gray-100 pt-4">
+                      <div className="flex items-center gap-2">
+                        <FiUsers className="w-5 h-5 text-blue-600" />
+                        <span>{ride.bookedSeats || 1} seat(s) booked</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <BiRupee className="w-5 h-5 text-blue-600" />
+                        <span>{ride.cost * (ride.bookedSeats || 1)} total amount</span>
+                      </div>
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))}
-          </div>
-        )}
+              ))}
+
+              {filterRides(activeTab).length === 0 && (
+                <div className="text-center text-gray-600 py-8">
+                  No {activeTab} rides found
+                </div>
+              )}
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );

@@ -1,5 +1,6 @@
 import React, { useEffect } from "react";
 import { Outlet } from "react-router-dom";
+import Footer from "./Footer";
 
 import Header from "./Header";
 
@@ -14,10 +15,11 @@ export default function Layout() {
   }, []); // No dependencies
 
   return (
-    <div className="min-h-screen theme-dark bg-skin-fill">
+    <div className="min-h-screen flex flex-col">
       <main className=" ">
         <Outlet />
       </main>
+      <Footer />
     </div>
   );
 }

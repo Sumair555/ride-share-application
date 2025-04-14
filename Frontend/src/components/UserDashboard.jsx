@@ -3,7 +3,7 @@ import img1 from "../../public/img1.jpeg";
 import axios from "axios";
 import Sidebar_User from "./Sidebar_User";
 import { Link } from "react-router-dom";
-import { FiCalendar, FiMapPin, FiUsers, FiClock } from "react-icons/fi";
+import { FiCalendar, FiMapPin, FiUsers, FiClock, FiTruck } from "react-icons/fi";
 import { BiRupee } from "react-icons/bi";
 
 function UserDashboard() {
@@ -199,12 +199,13 @@ function UserDashboard() {
               {filteredData.map((ride) => (
                 <div
                   key={ride._id}
-                  className="bg-white rounded-lg shadow-sm p-4 hover:shadow-md transition-shadow duration-200"
+                  className="bg-white rounded-lg shadow-sm p-6 hover:shadow-md transition-shadow duration-200"
                 >
-                  <div className="flex items-center justify-between">
-                    <div className="flex-1">
-                      <div className="flex items-center gap-3 mb-2">
-                        <FiCalendar className="w-4 h-4 text-blue-600" />
+                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                    <div className="flex-1 space-y-4">
+                      {/* Date and Time */}
+                      <div className="flex items-center gap-3">
+                        <FiCalendar className="w-5 h-5 text-blue-600" />
                         <span className="font-medium text-gray-800">
                           {new Date(ride.date).toLocaleString('en-US', {
                             year: 'numeric',
@@ -216,40 +217,76 @@ function UserDashboard() {
                         </span>
                       </div>
 
-                      <div className="flex items-start gap-3">
-                        <div className="flex flex-col items-center gap-1">
-                          <FiMapPin className="w-4 h-4 text-blue-600" />
-                          <div className="w-0.5 h-6 bg-gray-200"></div>
-                          <FiMapPin className="w-4 h-4 text-blue-600" />
-                        </div>
-                        <div>
-                          <div className="text-gray-800">
-                            <div className="font-medium">{typeof ride.from === 'string' ? ride.from : ride.from.place}</div>
+                      {/* From and To Locations with Details */}
+                      <div className="flex flex-col gap-4">
+                        <div className="flex items-start justify-between">
+                          <div className="flex items-start gap-3">
+                            <div className="flex flex-col items-center gap-1">
+                              <FiMapPin className="w-5 h-5 text-blue-600" />
+                              <div className="w-0.5 h-8 bg-gray-200"></div>
+                              <FiMapPin className="w-5 h-5 text-blue-600" />
+                            </div>
+                            <div className="space-y-4">
+                              <div className="text-gray-800">
+                                <div className="font-medium">
+                                  From: {typeof ride.from === 'string' ? ride.from : ride.from.place}
+                                </div>
+                              </div>
+                              <div className="text-gray-800">
+                                <div className="font-medium">
+                                  To: {typeof ride.to === 'string' ? ride.to : ride.to.place}
+                                </div>
+                              </div>
+                            </div>
                           </div>
-                          <div className="text-gray-800 mt-4">
-                            <div className="font-medium">{typeof ride.to === 'string' ? ride.to : ride.to.place}</div>
-                          </div>
-                        </div>
-                      </div>
 
-                      <div className="flex gap-4 mt-2 text-sm text-gray-600">
-                        <div className="flex items-center gap-1">
-                          <FiUsers className="w-4 h-4" />
-                          <span>{ride.seats} seats available</span>
+                          <div className="flex items-center gap-6">
+                            <div className="flex flex-col gap-4 items-start">
+                              <div className="flex items-center gap-2 text-gray-700">
+                                <FiUsers className="w-5 h-5 text-blue-600" />
+                                <span>{ride.seats} seats available</span>
+                              </div>
+                              <div className="flex items-center gap-2 text-gray-700">
+                                <BiRupee className="w-5 h-5 text-blue-600" />
+                                <span>{ride.cost} per seat</span>
+                              </div>
+                            </div>
+
+                            <div className="flex items-center">
+                              <Link
+                                to={`/user/payment/${ride._id}`}
+                                className="px-6 py-3 bg-blue-600 text-white text-center rounded-lg hover:bg-blue-700 transition-colors duration-200 font-medium whitespace-nowrap"
+                              >
+                                Book Now
+                              </Link>
+                            </div>
+                          </div>
                         </div>
-                        <div className="flex items-center gap-1">
-                          <BiRupee className="w-4 h-4" />
-                          <span>₹{ride.cost} per seat</span>
+
+                        {/* Vehicle Details Row */}
+                        <div className="flex items-center gap-2">
+                          {ride.driver && (
+                            <div className="flex items-center gap-2">
+                              <FiTruck className="w-5 h-5 text-blue-600" />
+                              <div className="flex gap-4">
+                                <div className="text-gray-600">
+                                  <span className="font-medium">Vehicle: </span>
+                                  <span>{ride.driver.vehicleType}</span>
+                                </div>
+                                <div className="text-gray-600">
+                                  <span className="font-medium">Model: </span>
+                                  <span>{ride.driver.vehicleModel}</span>
+                                </div>
+                                <div className="text-gray-600">
+                                  <span className="font-medium">Number: </span>
+                                  <span>{ride.driver.vehicleNumber}</span>
+                                </div>
+                              </div>
+                            </div>
+                          )}
                         </div>
                       </div>
                     </div>
-
-                    <Link
-                      to={`/user/payment/${ride._id}`}
-                      className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors duration-200"
-                    >
-                      Book Now
-                    </Link>
                   </div>
                 </div>
               ))}

@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { FaTimes, FaBars, FaUser, FaHome, FaHistory, FaEdit, FaSignOutAlt } from "react-icons/fa";
+import { FiClock } from "react-icons/fi";
 
 const Sidebar_User = () => {
   const [showSidebar, setShowSidebar] = useState(false);
@@ -17,7 +18,7 @@ const Sidebar_User = () => {
     { path: "/user/dashboard", name: "Dashboard", icon: <FaHome className="w-5 h-5" /> },
     { path: "/user/profile", name: "Profile", icon: <FaUser className="w-5 h-5" /> },
     { path: "/user/edit", name: "Edit Profile", icon: <FaEdit className="w-5 h-5" /> },
-    { path: "/user/recent", name: "Recent Rides", icon: <FaHistory className="w-5 h-5" /> },
+    { path: "/user/recent", name: "My Bookings", icon: <FiClock className="w-5 h-5" /> },
   ];
 
   return (
